@@ -1,0 +1,9 @@
+# Rust build artifacts
+/target
+
+# wasm-pack output
+/pkg
+
+# VSCode and backup files
+**/*.rs.bk
+.DS_Store

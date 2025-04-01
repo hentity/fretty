@@ -1,0 +1,8 @@
+{
+    "name": "fretty",
+    "private": true,
+    "scripts": {
+      "build-wasm": "cd wasm/audio_processing && wasm-pack build --target web --out-dir ../../frontend/src/wasm",
+      "dev": "npm run build-wasm && cd frontend && npm run dev"
+    }
+  }

@@ -1,0 +1,2 @@
+# ignore compiled WASM in frontend
+/frontend/src/wasm/*
