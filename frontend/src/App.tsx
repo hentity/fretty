@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import init, { greet } from './wasm/audio_processing'
+import init, { greet, analyse } from './wasm/audio_processing'
 import { auth, provider, db } from './firebase'
+import HomePage from './pages/HomePage'
+import LandingPage from './pages/LandingPage'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import {
   signInWithPopup,
   signOut,
@@ -18,6 +21,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [note, setNote] = useState('')
   const [savedNote, setSavedNote] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     const load = async () => {
@@ -32,12 +36,15 @@ function App() {
         if (userDoc.exists()) {
           setSavedNote(userDoc.data().note ?? '')
         }
+        navigate('/home')
+      } else {
+        navigate('/')
       }
     })
 
     load()
     return () => unsub()
-  }, [])
+  }, [navigate])
 
   const login = () => {
     signInWithPopup(auth, provider).catch((err) => {
@@ -65,29 +72,19 @@ function App() {
       <h1>Vite + Rust + WASM + Firebase</h1>
       <p>{message}</p>
 
-      {user ? (
-        <>
-          <p>Welcome, {user.displayName}</p>
-          <button onClick={logout}>Log out</button>
-
-          <div style={{ marginTop: 20 }}>
-            <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Write something..."
-            />
-            <button onClick={saveNote}>Save</button>
-          </div>
-
-          {savedNote && (
-            <p style={{ marginTop: 10 }}>
-              Last saved note: <strong>{savedNote}</strong>
-            </p>
-          )}
-        </>
-      ) : (
-        <button onClick={login}>Sign in with Google</button>
-      )}
+      <Routes>
+        <Route path="/" element={<LandingPage login={login} />} />
+        <Route
+          path="/home"
+          element={
+            user ? (
+              <HomePage user={user} note={note} savedNote={savedNote} logout={logout} setNote={setNote} saveNote={saveNote}/>
+            ) : (
+              <p>Loading...</p>
+            )
+          }
+        />
+      </Routes>
     </div>
   )
 }
