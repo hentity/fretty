@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 audio_utils = { path = "../audio_utils" }
+hound = "3"
