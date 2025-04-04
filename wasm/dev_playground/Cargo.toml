@@ -1,0 +1,7 @@
+[package]
+name = "dev_playground"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+audio_utils = { path = "../audio_utils" }

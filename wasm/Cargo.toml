@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "dev_playground",
+  "audio_utils",
+  "audio_processing"
+]

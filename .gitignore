@@ -1,2 +1,34 @@
-# ignore compiled WASM in frontend
-/frontend/src/wasm/*
+# === Rust-related ===
+/wasm/**/target/
+/wasm/**/Cargo.lock
+
+# WASM build output copied into frontend
+/frontend/src/wasm/*_bg.wasm
+/frontend/src/wasm/*_bg.js
+/frontend/src/wasm/.gitignore
+/frontend/src/wasm/package.json
+/frontend/src/wasm/README.md
+/frontend/src/wasm/*.d.ts
+
+# If using wasm-pack's default output dir
+/pkg/
+
+# === Node.js/Frontend ===
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
+
+# === Firebase ===
+/firebase/functions/node_modules/
+/firebase/.firebase/
+/firebase/.firebaserc
+
+# === OS/system files ===
+.DS_Store
+Thumbs.db
+
+# === Editor ===
+.idea/
+.vscode/
+*.swp
+*.log
