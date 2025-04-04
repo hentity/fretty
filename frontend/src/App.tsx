@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import init, { greet, analyse } from './wasm/audio_processing'
+import init, { greet } from './wasm/audio_processing'
 import { auth, provider, db } from './firebase'
 import HomePage from './pages/HomePage'
 import LandingPage from './pages/LandingPage'

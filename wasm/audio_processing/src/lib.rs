@@ -1,14 +1,16 @@
 use wasm_bindgen::prelude::*;
-use rustfft::{FftPlanner, num_complex::Complex};
+use js_sys::Float32Array;
+use audio_utils::{fundamental_frequency, frequency_to_note};
+
 
 #[wasm_bindgen]
-pub fn analyse(samples: &js_sys::Float32Array) -> String {
-    let mut planner = FftPlanner::new();
-    let fft = planner.plan_fft_forward(samples.length() as usize);
-    let mut buffer: Vec<Complex<f32>> = samples.to_vec().iter().map(|&x| Complex::new(x, 0.0)).collect();
-    fft.process(&mut buffer);
-
-    format!("FFT complete, processed {} samples.", buffer.len())
+pub fn detect_note(samples: &Float32Array, sample_rate: usize) -> Option<String> {
+    let rust_samples = samples.to_vec();
+    if let Some(freq) = fundamental_frequency(&rust_samples, sample_rate) {
+        frequency_to_note(freq)
+    } else {
+        None
+    }
 }
 
 #[wasm_bindgen]

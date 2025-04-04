@@ -1,4 +1,5 @@
 import { User } from 'firebase/auth'
+import NoteListener from '../components/NoteListener'
 
 function HomePage({
   user,
@@ -34,6 +35,8 @@ function HomePage({
           Last saved note: <strong>{savedNote}</strong>
         </p>
       )}
+
+        <NoteListener/>
     </>
   )
 }
