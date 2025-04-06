@@ -3,11 +3,11 @@ import { HelpCircle, Menu } from 'lucide-react'
 
 function Nav() {
   return (
-    <nav className="flex justify-between items-center px-4 py-3 text-black bg-gray-200">
+    <nav className="flex justify-between items-center px-4 py-3 text-black">
       {/* Left: Hamburger button */}
       <Link
         to="/"
-        className="flex items-center gap-2 text-sm font-medium hover:text-stone-700"
+        className="flex items-center gap-2 text-sm font-medium"
       >
         Sign in
       </Link>
@@ -15,7 +15,7 @@ function Nav() {
       {/* Right: Help button */}
       <Link
         to="/help"
-        className="flex items-center gap-1 text-sm font-medium hover:text-stone-700"
+        className="flex items-center gap-1 text-sm font-medium"
       >
         <HelpCircle size={20} />
         Help
