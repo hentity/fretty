@@ -14,4 +14,9 @@
     --color-accentDark: #588157;
 
     --color-borderDebug: #ffffff;
+
+    --color-easy: #3b82f6;
+    --color-good: #10b981;
+    --color-hard: #facc15;
+    --color-fail: #ef4444;
   }

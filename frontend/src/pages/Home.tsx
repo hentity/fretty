@@ -1,15 +1,62 @@
-import { useState } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { UserContext } from '../context/UserContext'
-import { useContext } from 'react'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { auth, provider, db } from '../firebase'
+import useProgress from '../hooks/useProgress'
 import NoteDisplay from '../components/NoteDisplay'
+import { createLesson } from '../logic/lessonUtils'
+import { Spot } from '../types'
+import { TimerHandle } from '../components/Timer'
+import Timer from '../components/Timer'
+import { addAttempt, getNextRandomSpot } from '../logic/lessonUtils'
+import { createDefaultProgress } from './Auth'
 
 function Home() {
   const { user, loading } = useContext(UserContext)
 
+  const { progress, setProgress, saveProgress } = useProgress(user)
   const lessonStates = ['first', 'before', 'during', 'after', 'paused']
   const [lessonStatus, setLessonStatus] = useState('before')
-  const [currentNote, setCurrentNote] = useState({ name: 'C', octave: 4 })
+  const [currentSpot, setCurrentSpot] = useState<Spot | null>(null)
   const [timerResult, setTimerResult] = useState('idle')
+  const [lesson, setLesson] = useState<Spot[]>([])
+
+  const timerRef = useRef<TimerHandle>(null);
+
+  const handleResult = (result: 'easy' | 'good' | 'hard' | 'fail') => {
+    if (!currentSpot || !progress) return
+  
+    addAttempt(currentSpot, result)
+    setProgress({ ...progress })
+  
+    setLesson((prevLesson) => {
+      const updated = [...prevLesson]
+      if (currentSpot.status !== 'review') {
+        updated.push(currentSpot)
+      }
+      console.log(updated)
+      return updated
+    })
+  }
+
+  const handleNext = () => {
+    if (!currentSpot || !progress) return
+  
+    setLesson((prevLesson) => {
+      if (prevLesson.length === 0) {
+        setLessonStatus('after')
+        setCurrentSpot(null)
+        saveProgress(progress)
+        return []
+      }
+  
+      const [next, newQueue] = getNextRandomSpot(prevLesson)
+      setCurrentSpot(next)
+      timerRef.current?.start()
+      return newQueue
+    })
+
+  }
 
   const cycleLessonStatus = () => {
     const currentIndex = lessonStates.indexOf(lessonStatus)
@@ -17,12 +64,37 @@ function Home() {
     setLessonStatus(lessonStates[nextIndex])
   }
 
+  const startLesson = () => {
+    if (!progress) return
+
+    const newLesson = createLesson(progress)
+    setLesson(newLesson)
+
+    if (newLesson.length > 0) {
+      const first = newLesson.shift()
+      setCurrentSpot(first ?? null)
+      setLessonStatus('during')
+    }
+  }
+
+  const resetProgress = async () => {
+    if (!user) return
+    const ref = doc(db, 'progress', user.uid)
+    const defaultProgress = createDefaultProgress()
+    await setDoc(ref, defaultProgress)
+    setProgress(defaultProgress)
+    setLessonStatus('before')
+    setCurrentSpot(null)
+    setLesson([])
+    console.log('Progress reset to default.')
+  }
+
   if (loading) return <p>Loading user...</p>
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
       <div
-        className="aspect-[21/9] w-[100vw] h-auto max-w-[1024px] max-h-[calc(1024px*(9/21))]"
+        className="aspect-[21/9] w-[100vw] h-auto max-w-[1024px] max-h-[calc(1024px*(9/21))] border"
         style={{
           height: 'min(calc((100vw * 9 / 21)), calc(100vh - 4rem))',
         }}
@@ -33,16 +105,32 @@ function Home() {
             <div className="flex-1 flex items-center justify-center m-1 border border-borderDebug">
               <NoteDisplay
                 lessonStatus={lessonStatus}
-                currentNote={currentNote}
+                currentSpot={currentSpot}
                 timerResult={timerResult}
+                onStart={startLesson}
               />
             </div>
           </div>
 
           {/* Lesson Panel */}
-          <div className="w-3/4 h-full flex flex-col justify-center m-1">
-            <div className="flex-1 flex items-center justify-center m-1 border border-borderDebug">
-              Lesson preview / Lesson+Fretboard / Lesson review
+          <div className="w-3/4 h-full flex justify-center m-1">
+            <div className="flex w-full flex-col items-center justify-center m-1 border border-borderDebug">
+              <Timer 
+                ref={timerRef}
+                totalTime={5000}
+                easyTime={1700}
+                goodTime={3000}
+                onComplete={handleResult}
+              />
+              <button onClick={() => timerRef.current?.start()}>Start</button>
+              <button onClick={() => timerRef.current?.stop()}>Stop</button>
+              <button onClick={handleNext} className="mt-2 px-4 py-2 bg-secondary">Next</button>
+              <button
+                onClick={resetProgress}
+                className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+              >
+                Reset Progress
+              </button>
             </div>
           </div>
         </div>
