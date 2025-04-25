@@ -3,12 +3,12 @@ import { auth, provider, db } from '../firebase'
 import {
   signInWithPopup,
   signOut,
-  onAuthStateChanged,
-  User,
+  onAuthStateChanged
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Progress, Spot } from '../types'
 import { spotToNote } from '../logic/noteUtils'
+import { useAuth } from '../context/UserContext'
 
 export function createDefaultProgress(): Progress {
   const tuning = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
@@ -55,14 +55,8 @@ async function createProgressIfMissing(uid: string) {
 }
 
 function Auth() {
-  const [user, setUser] = useState<User | null>(null)
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser)
-    })
-    return () => unsubscribe()
-  }, [])
+  // Removed useEffect and centralised user context retrieval from userContext.tsx 
+  const user = useAuth().user
 
   const login = async () => {
     try {
