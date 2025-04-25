@@ -1,46 +1,13 @@
 import { useState, useEffect } from 'react'
 import { auth, provider, db } from '../firebase'
+import { createDefaultProgress }  from '../logic/progressUtils'
 import {
   signInWithPopup,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { Progress, Spot } from '../types'
-import { spotToNote } from '../logic/noteUtils'
 import { useAuth } from '../context/UserContext'
-
-export function createDefaultProgress(): Progress {
-  const tuning = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
-
-  const spots: Spot[] = []
-  for (let string = 0; string < 6; string++) {
-    for (let fret = 0; fret < 12; fret++) {
-      const { note, octave } = spotToNote(string, fret, tuning)
-      let status: Spot['status'] = "unseen"
-      if (note.length > 1) { status = "unlearnable" }
-      spots.push({
-        status: status,
-        interval: 1,
-        ease_factor: 1.6,
-        good_attempts: 0,
-        string,
-        fret,
-        note,
-        octave,
-      })
-    }
-  }
-
-  return {
-    new: true,
-    tuning,
-    last_review_date: null,
-    review_date_to_spots: {},
-    spot_to_review_date: {},
-    spots
-  }
-}
 
 async function createProgressIfMissing(uid: string) {
   const ref = doc(db, 'progress', uid)

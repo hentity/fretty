@@ -6,7 +6,7 @@ function getSpotsByStatus(spots: Spot[], status: string): Spot[] {
   return spots.filter((spot) => spot.status === status)
 }
 
-export function createLesson(progress: Progress): Spot[] {
+export function buildLesson(progress: Progress): Spot[] {
   const lesson: Spot[] = []
 
   const addSpots = (spots: Spot[]) => {
@@ -24,9 +24,7 @@ export function createLesson(progress: Progress): Spot[] {
   addSpots(unseen)
 
   for (const spot of lesson) {
-    if (spot.status === 'unseen') {
-          spot.status = 'learning'
-    }
+    spot.status = 'learning'
   }
 
   return lesson
@@ -42,12 +40,12 @@ export function getNextRandomSpot(lesson: Spot[]): [Spot, Spot[]] {
   return [nextSpot, copy]
 }
 
-const LEARNING_GOOD_ATTEMPTS = 3
-const BASE_EASE_FACTOR = 2.5
-const MAX_EASE_FACTOR = 2.5
-const MIN_EASE_FACTOR = 1.3
+export const LEARNING_GOOD_ATTEMPTS = 3
+const BASE_EASE_FACTOR = 1.6
+const MAX_EASE_FACTOR = 3.0
+const MIN_EASE_FACTOR = 1.2
 const EASE_FACTOR_DROP = 0.2
-const EASE_FACTOR_BUMP = 0.15
+const EASE_FACTOR_BUMP = 0.2
 
 export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail') {
   if (spot.status === 'unlearnable') {
@@ -59,10 +57,14 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
   console.log(`⏱️ Result: ${result}`)
   console.log(`🎯 Before: ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}`)
 
+  spot.all_attempts += 1
+  
   if (spot.status === 'learning') {
     if (result === 'fail') {
       spot.good_attempts = 0
-      console.log('❌ Fail → Reset good_attempts to 0')
+      console.log('Fail → Reset good_attempts to 0')
+    } else if (result == 'hard') {
+      console.log('Hard → good_attempts stays the same')
     } else if (result === 'good') {
       spot.good_attempts += 1
       console.log('👍 Good → Increment good_attempts')
@@ -70,35 +72,31 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
       spot.good_attempts = LEARNING_GOOD_ATTEMPTS
       console.log('✨ Easy → Jump to full good_attempts')
     }
+  }
 
-    if (spot.good_attempts >= LEARNING_GOOD_ATTEMPTS) {
-      spot.status = 'review'
-      spot.interval = Math.max(1, spot.interval)
-      spot.good_attempts = 0
-      console.log('✅ Promoted to REVIEW')
-    }
-
-  } else if (spot.status === 'review') {
-    if (result === 'fail') {
-      spot.status = 'learning'
-      spot.good_attempts = LEARNING_GOOD_ATTEMPTS - 1
+  if (spot.good_attempts >= LEARNING_GOOD_ATTEMPTS) {
+    if (spot.all_attempts > LEARNING_GOOD_ATTEMPTS + 1) {
       spot.ease_factor = Math.min(spot.ease_factor, BASE_EASE_FACTOR)
       spot.interval = Math.max(1, spot.interval / spot.ease_factor)
-      console.log('❌ Fail → Demoted to LEARNING, dropped ease factor')
-    } else if (result === 'hard') {
+      console.log('More than one fail → Ease factor reset, interval reduced')
+    } else if (spot.all_attempts > LEARNING_GOOD_ATTEMPTS) {
       spot.ease_factor = Math.max(MIN_EASE_FACTOR, spot.ease_factor - EASE_FACTOR_DROP)
       spot.interval = spot.interval * spot.ease_factor
-      console.log('😬 Hard → Decreased ease, extended interval')
-    } else if (result === 'good') {
+      console.log('One fail → Decreased ease, increased interval')
+    } else if (spot.all_attempts == LEARNING_GOOD_ATTEMPTS) {
       spot.interval = spot.interval * spot.ease_factor
-      console.log('👍 Good → Increased interval (EF unchanged)')
+      console.log('No fails → Same ease, increased interval')
     } else if (result === 'easy') {
       spot.ease_factor = Math.min(MAX_EASE_FACTOR, spot.ease_factor + EASE_FACTOR_BUMP)
       spot.interval = spot.interval * spot.ease_factor
-      console.log('✨ Easy → Boosted ease factor and interval')
+      console.log('Easy → Increased ease, increased interval')
     }
+    
+    spot.status = 'review'
+    spot.good_attempts = 0
+    spot.all_attempts = 0
   }
 
-  console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}`)
+  console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}, all_attempts=${spot.all_attempts}`)
   return spot
 }

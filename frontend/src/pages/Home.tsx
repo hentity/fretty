@@ -1,80 +1,32 @@
 import { useState, useEffect, useContext, useRef } from 'react'
-import { UserContext } from '../context/UserContext'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { auth, provider, db } from '../firebase'
+import { createDefaultProgress } from '../logic/progressUtils'
 import useProgress from '../hooks/useProgress'
-import NoteDisplay from '../components/NoteDisplay'
-import { createLesson } from '../logic/lessonUtils'
-import { Spot } from '../types'
-import { TimerHandle } from '../components/Timer'
-import Timer from '../components/Timer'
-import { addAttempt, getNextRandomSpot } from '../logic/lessonUtils'
-import { createDefaultProgress } from './Auth'
+import { UserContext } from '../context/UserContext'
+import { useLesson, LessonStatus } from '../context/LessonContext'
+import  { Spot } from '../types'
+
+import NotePanelBefore from '../components/note_panel/before/NotePanelBefore'
+import NotePanelDuring from '../components/note_panel/during/NotePanelDuring'
+import NotePanelAfter from '../components/note_panel/after/NotePanelAfter'
+
+import LessonPanelBefore from '../components/lesson_panel/before/LessonPanelBefore'
+import LessonPanelDuring from '../components/lesson_panel/during/LessonPanelDuring'
+import LessonPanelAfter from '../components/lesson_panel/after/LessonPanelAfter'
 
 function Home() {
   const { user, loading } = useContext(UserContext)
-
+  const { lessonStatus, setLessonStatus, startLesson } = useLesson()
   const { progress, setProgress, saveProgress } = useProgress(user)
-  const lessonStates = ['first', 'before', 'during', 'after', 'paused']
-  const [lessonStatus, setLessonStatus] = useState('before')
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null)
-  const [timerResult, setTimerResult] = useState('idle')
-  const [lesson, setLesson] = useState<Spot[]>([])
 
-  const timerRef = useRef<TimerHandle>(null);
-
-  const handleResult = (result: 'easy' | 'good' | 'hard' | 'fail') => {
-    if (!currentSpot || !progress) return
-  
-    addAttempt(currentSpot, result)
-    setProgress({ ...progress })
-  
-    setLesson((prevLesson) => {
-      const updated = [...prevLesson]
-      if (currentSpot.status !== 'review') {
-        updated.push(currentSpot)
-      }
-      console.log(updated)
-      return updated
-    })
-  }
-
-  const handleNext = () => {
-    if (!currentSpot || !progress) return
-  
-    setLesson((prevLesson) => {
-      if (prevLesson.length === 0) {
-        setLessonStatus('after')
-        setCurrentSpot(null)
-        saveProgress(progress)
-        return []
-      }
-  
-      const [next, newQueue] = getNextRandomSpot(prevLesson)
-      setCurrentSpot(next)
-      timerRef.current?.start()
-      return newQueue
-    })
-
-  }
+  const lessonStates: LessonStatus[] = ['before', 'during', 'after']
 
   const cycleLessonStatus = () => {
     const currentIndex = lessonStates.indexOf(lessonStatus)
     const nextIndex = (currentIndex + 1) % lessonStates.length
     setLessonStatus(lessonStates[nextIndex])
-  }
-
-  const startLesson = () => {
-    if (!progress) return
-
-    const newLesson = createLesson(progress)
-    setLesson(newLesson)
-
-    if (newLesson.length > 0) {
-      const first = newLesson.shift()
-      setCurrentSpot(first ?? null)
-      setLessonStatus('during')
-    }
   }
 
   const resetProgress = async () => {
@@ -85,12 +37,10 @@ function Home() {
     setProgress(defaultProgress)
     setLessonStatus('before')
     setCurrentSpot(null)
-    setLesson([])
     console.log('Progress reset to default.')
   }
 
   if (loading) return <p>Loading user...</p>
-
   return (
     <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
       <div
@@ -103,34 +53,24 @@ function Home() {
           {/* Note Panel */}
           <div className="w-1/4 h-full flex flex-col justify-center m-1">
             <div className="flex-1 flex items-center justify-center m-1 border border-borderDebug">
-              <NoteDisplay
-                lessonStatus={lessonStatus}
-                currentSpot={currentSpot}
-                timerResult={timerResult}
-                onStart={startLesson}
-              />
+              {lessonStatus === 'before' && (
+                <NotePanelBefore />
+              )}
+              {lessonStatus === 'during' && (
+                <NotePanelDuring lessonStatus={lessonStatus}/>
+              )}
+              {lessonStatus === 'after' && <NotePanelAfter />}
             </div>
           </div>
 
           {/* Lesson Panel */}
           <div className="w-3/4 h-full flex justify-center m-1">
             <div className="flex w-full flex-col items-center justify-center m-1 border border-borderDebug">
-              <Timer 
-                ref={timerRef}
-                totalTime={5000}
-                easyTime={1700}
-                goodTime={3000}
-                onComplete={handleResult}
-              />
-              <button onClick={() => timerRef.current?.start()}>Start</button>
-              <button onClick={() => timerRef.current?.stop()}>Stop</button>
-              <button onClick={handleNext} className="mt-2 px-4 py-2 bg-secondary">Next</button>
-              <button
-                onClick={resetProgress}
-                className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-              >
-                Reset Progress
-              </button>
+              {lessonStatus === 'before' && <LessonPanelBefore />}
+              {lessonStatus === 'during' && (
+                <LessonPanelDuring/>
+              )}
+              {lessonStatus === 'after' && <LessonPanelAfter />}
             </div>
           </div>
         </div>
@@ -142,6 +82,12 @@ function Home() {
         className="mt-4 px-4 py-2 bg-primaryLight"
       >
         Next Lesson Status ({lessonStatus})
+      </button>
+      <button
+        onClick={resetProgress}
+        className="mt-4 px-4 py-2 bg-primaryLight"
+      >
+        Reset Progress
       </button>
     </div>
   )

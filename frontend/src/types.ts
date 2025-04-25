@@ -7,6 +7,7 @@ export interface Spot {
   octave: number;
   ease_factor: number;
   good_attempts: number;
+  all_attempts: number;
 }
 
 export interface Progress {

@@ -145,16 +145,49 @@ const Timer = forwardRef<TimerHandle, TimerProps>(
     });
 
     return (
-      <div
-        ref={containerRef}
-        className="w-full text-center overflow-hidden"
-        style={{
-          fontFamily: 'monospace',
-          fontSize: '1rem',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {blocks}
+      <div className="w-full flex flex-col items-center justify-center space-y-2">
+        {/* ⏱️ Simulated Result Buttons */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => onComplete('easy')}
+            className="px-4 py-1 rounded bg-easy text-white"
+          >
+            Easy
+          </button>
+          <button
+            onClick={() => onComplete('good')}
+            className="px-4 py-1 rounded bg-good text-white"
+          >
+            Good
+          </button>
+          <button
+            onClick={() => onComplete('hard')}
+            className="px-4 py-1 rounded bg-hard text-black"
+          >
+            Hard
+          </button>
+          <button
+            onClick={() => onComplete('fail')}
+            className="px-4 py-1 rounded bg-fail text-white"
+          >
+            Fail
+          </button>
+        </div>
+
+        {/* 🔧 Placeholder for the visual timer (currently disabled) */}
+        {/*
+        <div
+          ref={containerRef}
+          className="w-full text-center overflow-hidden"
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '1rem',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {blocks}
+        </div>
+        */}
       </div>
     );
   }
