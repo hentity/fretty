@@ -1,36 +1,119 @@
 import { Spot, Progress } from '../types'
 
-export const MAX_DAILY_NOTES = 5
+export const MAX_DAILY_NOTES   = 5        // lesson size
+export const RANDOM_POP_LEN    = 2
 
+export const todayISO = (offsetDays = 0): string => {
+  const date = new Date()
+  date.setDate(date.getDate() + offsetDays)
+  return date.toISOString().slice(0, 10)
+}
+
+export const spotKey = (s: Spot): string => `${s.string}-${s.fret}`
+
+export const getSpotsByKeys = (spots: Spot[], keys: string[]) =>
+  spots.filter((s) => keys.includes(spotKey(s)))
+
+export const removeReview = (progress: Progress, spot: Spot) => {
+  const key = spotKey(spot)
+  const date = progress.spot_to_review_date[key]
+  if (!date) return
+  // remove from date list
+  progress.review_date_to_spots[date] =
+    progress.review_date_to_spots[date].filter((k) => k !== key)
+  if (!progress.review_date_to_spots[date].length)
+    delete progress.review_date_to_spots[date]
+  // remove reverse map
+  delete progress.spot_to_review_date[key]
+}
+
+export const scheduleReview = (
+  progress: Progress,
+  spot: Spot,
+  days: number,
+  startDateISO: string
+) => {
+  const key = spotKey(spot)
+  // remove any previous schedule first
+  removeReview(progress, spot)
+
+  let target = new Date(startDateISO)
+  target.setDate(target.getDate() + days)
+
+  // bump forward until capacity for that day
+  while (true) {
+    const iso = target.toISOString().slice(0, 10)
+    const bucket = progress.review_date_to_spots[iso] ?? []
+    if (bucket.length < MAX_DAILY_NOTES) {
+      // store
+      progress.review_date_to_spots[iso] = [...bucket, key]
+      progress.spot_to_review_date[key] = iso
+      break
+    }
+    target.setDate(target.getDate() + 1)
+  }
+}
 function getSpotsByStatus(spots: Spot[], status: string): Spot[] {
   return spots.filter((spot) => spot.status === status)
 }
 
-export function buildLesson(progress: Progress): Spot[] {
+export const buildLesson = (
+  progress: Progress,
+  today = todayISO()
+): Spot[] => {
   const lesson: Spot[] = []
 
   const addSpots = (spots: Spot[]) => {
     const remaining = MAX_DAILY_NOTES - lesson.length
-    lesson.push(...spots.slice(0, remaining))
+    if (remaining > 0) lesson.push(...spots.slice(0, remaining))
   }
 
-  const reviews = getSpotsByStatus(progress.spots, 'review')
-  addSpots(reviews)
+  // add spots due for review
+  const keysToday = progress.review_date_to_spots[today] ?? []
+  const dueReviews = getSpotsByKeys(progress.spots, keysToday)
+  addSpots(dueReviews)
 
-  const newSpots = getSpotsByStatus(progress.spots, 'learning')
-  addSpots(newSpots)
+  // add other unlearned/unseen spots
+  const learning = progress.spots.filter((s) => s.status === 'learning')
+  addSpots(learning)
 
-  const unseen = getSpotsByStatus(progress.spots, 'unseen')
+  const unseen = progress.spots.filter((s) => s.status === 'unseen')
   addSpots(unseen)
 
-  for (const spot of lesson) {
-    spot.status = 'learning'
-  }
+  lesson.forEach((s) => {
+    s.status = 'learning'
+    s.good_attempts = 0
+    s.all_attempts = 0
+  })
 
   return lesson
 }
 
-const RANDOM_POP_LEN = 2
+export const previewLesson = (
+  progress: Progress,
+  today = todayISO()
+): Spot[] => {
+  const lesson: Spot[] = []
+
+  const addSpots = (spots: Spot[]) => {
+    const remaining = MAX_DAILY_NOTES - lesson.length
+    if (remaining > 0) lesson.push(...spots.slice(0, remaining))
+  }
+
+  // add spots due for review
+  const keysToday   = progress.review_date_to_spots[today] ?? []
+  const dueReviews  = getSpotsByKeys(progress.spots, keysToday)
+  addSpots(dueReviews)
+
+  // add other unlearned/unseen spots
+  const learning    = progress.spots.filter((s) => s.status === 'learning')
+  addSpots(learning)
+
+  const unseen      = progress.spots.filter((s) => s.status === 'unseen')
+  addSpots(unseen)
+
+  return lesson
+}
 
 export function getNextRandomSpot(lesson: Spot[]): [Spot, Spot[]] {
   const copy = [...lesson]
@@ -59,7 +142,7 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
 
   spot.all_attempts += 1
   
-  if (spot.status === 'learning') {
+  if (spot.status === 'learning' || spot.status === 'review') {
     if (result === 'fail') {
       spot.good_attempts = 0
       console.log('Fail → Reset good_attempts to 0')
@@ -99,4 +182,46 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
 
   console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}, all_attempts=${spot.all_attempts}`)
   return spot
+}
+
+export function pushBackReviews(progress: Progress, todayISO: string) {
+  const dateKeys = Object.keys(progress.review_date_to_spots)
+  if (dateKeys.length === 0) return
+
+  const sortedDates = dateKeys.sort() // ascending YYYY-MM-DD
+  const earliestDate = sortedDates[0]
+
+  if (earliestDate >= todayISO) {
+    // already up to date
+    return
+  }
+
+  const shiftDays = calculateDaysDifference(earliestDate, todayISO)
+
+  const newReviewDateToSpots: Record<string, string[]> = {}
+  const newSpotToReviewDate: Record<string, string> = {}
+
+  for (const [oldDate, spots] of Object.entries(progress.review_date_to_spots)) {
+    const newDate = shiftDate(oldDate, shiftDays)
+    newReviewDateToSpots[newDate] = (newReviewDateToSpots[newDate] || []).concat(spots)
+    for (const spotKey of spots) {
+      newSpotToReviewDate[spotKey] = newDate
+    }
+  }
+
+  progress.review_date_to_spots = newReviewDateToSpots
+  progress.spot_to_review_date = newSpotToReviewDate
+}
+
+function calculateDaysDifference(fromISO: string, toISO: string): number {
+  const from = new Date(fromISO)
+  const to = new Date(toISO)
+  const diffTime = to.getTime() - from.getTime()
+  return Math.round(diffTime / (1000 * 60 * 60 * 24)) // ms to days
+}
+
+function shiftDate(dateISO: string, days: number): string {
+  const date = new Date(dateISO)
+  date.setDate(date.getDate() + days)
+  return date.toISOString().slice(0, 10)
 }

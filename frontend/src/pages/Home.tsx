@@ -17,7 +17,7 @@ import LessonPanelAfter from '../components/lesson_panel/after/LessonPanelAfter'
 
 function Home() {
   const { user, loading } = useContext(UserContext)
-  const { lessonStatus, setLessonStatus, startLesson } = useLesson()
+  const { lessonStatus, setLessonStatus, startLesson, advanceDay } = useLesson()
   const { progress, setProgress, saveProgress } = useProgress(user)
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null)
 
@@ -88,6 +88,12 @@ function Home() {
         className="mt-4 px-4 py-2 bg-primaryLight"
       >
         Reset Progress
+      </button>
+      <button
+        onClick={advanceDay}
+        className="mt-4 px-4 py-2 bg-primaryLight"
+      >
+        Advance 1 Day
       </button>
     </div>
   )

@@ -1,4 +1,4 @@
-import { buildLesson } from '../../../logic/lessonUtils'
+import { buildLesson, previewLesson } from '../../../logic/lessonUtils'
 import { useAuth } from '../../../context/UserContext'
 import useProgress from '../../../hooks/useProgress'
 
@@ -14,7 +14,7 @@ function LessonPanelBefore() {
     )
   }
 
-  const lessonPreview = buildLesson(progress)
+  const lessonPreview = previewLesson(progress)
 
   if (lessonPreview.length === 0) {
     return (

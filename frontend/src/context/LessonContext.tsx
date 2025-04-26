@@ -14,6 +14,7 @@ export type LessonContextType = {
   startLesson: () => void
   endLesson: () => void
   advance: (result: PracticeResult) => void
+  advanceDay: () => void
 }
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)
