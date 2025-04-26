@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Auth from './pages/Auth'
 import Help from './pages/Help'
 import Nav from './components/Nav'
+import TextTest from './pages/TextTest'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/textTest" element={<TextTest />} />
         </Routes>
       </LessonProvider>
     </div>

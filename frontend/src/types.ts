@@ -19,3 +19,15 @@ export interface Progress {
   spot_to_review_date: Record<string, string>;
   spots: Spot[];
 }
+
+export type ColoredChar = {
+  char: string;
+  fgColor?: string; // text color
+  bgColor?: string; // background color
+};
+
+export type ColoredChunk = {
+  text: string;
+  fgColor?: string;
+  bgColor?: string;
+};
