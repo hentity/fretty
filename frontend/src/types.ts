@@ -8,6 +8,7 @@ export interface Spot {
   ease_factor: number;
   good_attempts: number;
   all_attempts: number;
+  num_practices: number;
 }
 
 export interface Progress {

@@ -24,6 +24,7 @@ export function createDefaultProgress(): Progress {
         fret,
         note,
         octave,
+        num_practices: 0,
       })
     }
   }
