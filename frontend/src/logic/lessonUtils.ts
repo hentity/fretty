@@ -145,15 +145,15 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
   if (spot.status === 'learning' || spot.status === 'review') {
     if (result === 'fail') {
       spot.good_attempts = 0
-      console.log('Fail → Reset good_attempts to 0')
+      console.log('Fail -> Reset good_attempts to 0')
     } else if (result == 'hard') {
-      console.log('Hard → good_attempts stays the same')
+      console.log('Hard -> good_attempts stays the same')
     } else if (result === 'good') {
       spot.good_attempts += 1
-      console.log('👍 Good → Increment good_attempts')
+      console.log('👍 Good -> Increment good_attempts')
     } else if (result === 'easy') {
       spot.good_attempts = LEARNING_GOOD_ATTEMPTS
-      console.log('✨ Easy → Jump to full good_attempts')
+      console.log('✨ Easy -> Jump to full good_attempts')
     }
   }
 
@@ -161,23 +161,22 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
     if (spot.all_attempts > LEARNING_GOOD_ATTEMPTS + 1) {
       spot.ease_factor = Math.min(spot.ease_factor, BASE_EASE_FACTOR)
       spot.interval = Math.max(1, spot.interval / spot.ease_factor)
-      console.log('More than one fail → Ease factor reset, interval reduced')
+      console.log('More than one fail -> Ease factor reset, interval reduced')
     } else if (spot.all_attempts > LEARNING_GOOD_ATTEMPTS) {
       spot.ease_factor = Math.max(MIN_EASE_FACTOR, spot.ease_factor - EASE_FACTOR_DROP)
       spot.interval = spot.interval * spot.ease_factor
-      console.log('One fail → Decreased ease, increased interval')
+      console.log('One fail -> Decreased ease, increased interval')
     } else if (spot.all_attempts == LEARNING_GOOD_ATTEMPTS) {
       spot.interval = spot.interval * spot.ease_factor
-      console.log('No fails → Same ease, increased interval')
+      console.log('No fails -> Same ease, increased interval')
     } else if (result === 'easy') {
       spot.ease_factor = Math.min(MAX_EASE_FACTOR, spot.ease_factor + EASE_FACTOR_BUMP)
       spot.interval = spot.interval * spot.ease_factor
-      console.log('Easy → Increased ease, increased interval')
+      console.log('Easy -> Increased ease, increased interval')
     }
     
     spot.status = 'review'
-    spot.good_attempts = 0
-    spot.all_attempts = 0
+    spot.num_practices += 1
   }
 
   console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}, all_attempts=${spot.all_attempts}`)

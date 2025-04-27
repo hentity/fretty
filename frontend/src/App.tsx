@@ -8,9 +8,9 @@ import TextTest from './pages/TextTest'
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-bg">
       <LessonProvider>
-        <Nav className="h-16 bg-gray-800 text-white flex items-center px-4"/>
+        <Nav className="h-16 bg-gray-800 text-fg flex items-center px-4"/>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />

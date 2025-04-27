@@ -1,19 +1,28 @@
-import { useLesson } from '../../../context/LessonContext'
+import { useLesson } from '../../../context/LessonContext';
+import { TextBox } from '../../../components/TextBox';
+import { TextContainer } from '../../../components/TextContainer';
+import { makeTextBlock } from '../../../styling/stylingUtils';
 
 function NotePanelBefore() {
-  const { startLesson } = useLesson()
+  const { startLesson } = useLesson();
+
+  const buttonContent = makeTextBlock([
+    { text: '                \n  Start Lesson  \n                ', onClick: startLesson, className: 'font-bold bg-good text-bg group-hover:brightness-110' },
+  ]);
 
   return (
-    <div className="w-full h-full border border-dashed border-gray-400 flex flex-col items-center justify-center text-gray-600 text-sm">
-      <p className="mb-4">NotePanelBefore</p>
-      <button
-        onClick={startLesson}
-        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-      >
-        Start Lesson
-      </button>
+    <div className="flex justify-center items-center w-full h-full">
+      <TextContainer width={22} height={21}>
+        <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
+          <TextBox
+            width={16}
+            height={4}
+            content={buttonContent}
+          />
+        </div>
+      </TextContainer>
     </div>
-  )
+  );
 }
 
-export default NotePanelBefore
+export default NotePanelBefore;

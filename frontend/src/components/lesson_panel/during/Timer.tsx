@@ -5,6 +5,8 @@ import React, {
   forwardRef,
   useImperativeHandle,
 } from 'react';
+import { makeTextBlock } from '../../../styling/stylingUtils';
+import { TextBox } from '../../../components/TextBox';
 
 interface TimerProps {
   totalTime: number;
@@ -144,35 +146,20 @@ const Timer = forwardRef<TimerHandle, TimerProps>(
       );
     });
 
+    const content = makeTextBlock([
+      { text: '[ Easy ]', className: 'text-easy font-bold hover:text-bg hover:bg-easy', onClick: () => onComplete('easy') },
+      { text: '[ Good ]', className: 'text-good font-bold hover:text-bg hover:bg-good', onClick: () => onComplete('good') },
+      { text: '[ Hard ]', className: 'text-hard font-bold hover:text-bg hover:bg-hard', onClick: () => onComplete('hard') },
+      { text: '[ Fail ]', className: 'text-fail font-bold hover:text-bg hover:bg-fail', onClick: () => onComplete('fail') },
+    ]);
+
     return (
-      <div className="w-full flex flex-col items-center justify-center space-y-2">
-        {/* ⏱️ Simulated Result Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onComplete('easy')}
-            className="px-4 py-1 rounded bg-easy text-white"
-          >
-            Easy
-          </button>
-          <button
-            onClick={() => onComplete('good')}
-            className="px-4 py-1 rounded bg-good text-white"
-          >
-            Good
-          </button>
-          <button
-            onClick={() => onComplete('hard')}
-            className="px-4 py-1 rounded bg-hard text-black"
-          >
-            Hard
-          </button>
-          <button
-            onClick={() => onComplete('fail')}
-            className="px-4 py-1 rounded bg-fail text-white"
-          >
-            Fail
-          </button>
-        </div>
+        <div className="flex justify-center items-center w-full">
+        <TextBox
+          width={60}
+          height={3}
+          content={content}
+        />
 
         {/* 🔧 Placeholder for the visual timer (currently disabled) */}
         {/*

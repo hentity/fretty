@@ -5,11 +5,11 @@ import { ColoredChar } from "../types";
 
 function TextTest() {
   const textOne = makeTextBlock([
-    { text: "A single line", fgColor: 'var(--color-blue)' },
+    { text: "A single line", fgColor: 'var(--color-practiced)'},
   ]);
   const textTwo = makeTextBlock([
-    { text: "Component two\n", bgColor: 'var(--color-blue)', fgColor:'var(--color-textLight)' },
-    { text: "Second Line", bgColor: 'var(--color-magenta)', fgColor:'var(--color-textLight)' },
+    { text: "Component two\n"},
+    { text: "Second Line", bgColor: 'var(--color-mastered)', fgColor:'var(--color-bg)', onClick: () => console.log('Clicked!') },
   ]);
 
   const [content, setContent] = useState<ColoredChar[][]>([]);
@@ -19,7 +19,7 @@ function TextTest() {
       .then((res) => res.text())
       .then((text) => {
         const colored = makeTextBlock([
-          { text: text, fgColor: 'var(--color-green)' }
+          { text: text, fgColor: 'var(--color-practiced)' }
         ]);
         setContent(colored);
       })
@@ -31,14 +31,14 @@ function TextTest() {
   return (
     <div className="flex flex-col items-center">
       {/* First Row: two TextBoxes side by side */}
-      <div className="flex flex-row justify-center">
-        <TextBox width={30} height={6} content={content} border={false} />
-        <TextBox width={30} height={6} content={textOne} border={false} />
+      <div className="flex flex-row justify-center hover:border hover:border-borderDebug">
+        <TextBox width={30} height={6} content={content} />
+        <TextBox width={30} height={6} content={textOne} />
       </div>
 
       {/* Second Row: one TextBox spanning under both */}
-      <div className="flex justify-center">
-        <TextBox width={60} height={4} content={textTwo} border={false} />
+      <div className="flex justify-center hover:border hover:border-borderDebug">
+        <TextBox width={60} height={4} content={textTwo}/>
       </div>
     </div>
   );

@@ -1,96 +1,86 @@
 import React from 'react';
-import { ColoredChar } from '../types';
+import { ColoredChunk } from '../types';
 
 type TextBoxProps = {
-  width: number;      // in characters
-  height: number;     // in lines
-  content: ColoredChar[][];  // 2D array: lines of characters
-  border?: boolean;
+  width: number;    // width in characters
+  height: number;   // height in lines
+  content: ColoredChunk[];
 };
 
-export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, border = false }) => {
-  if (content.some(line => line.length > width)) {
-    throw new Error(`Content is wider than the specified width (${width}).`);
-  }
-  if (content.length > height) {
-    throw new Error(`Content is taller than the specified height (${height}).`);
-  }
-  
-  // Helper to create an empty line
-  const createEmptyLine = (): ColoredChar[] => Array(width).fill({ char: ' ' });
+export const TextBox: React.FC<TextBoxProps> = ({ width, height, content }) => {
+  // Break content into visual lines based on \n
+  const allLines: { chunks: ColoredChunk[]; length: number }[] = [];
+  let currentLineChunks: ColoredChunk[] = [];
+  let currentLength = 0;
 
-  // Build content padded to width x height
-  let paddedContent: ColoredChar[][] = [];
+  content.forEach((chunk) => {
+    const parts = chunk.text.split('\n');
 
-  // Center content
-  const contentHeight = content.length;
-  const topPadding = Math.floor((height - contentHeight) / 2);
-  const bottomPadding = height - topPadding - contentHeight;
+    parts.forEach((part, idx) => {
+      if (idx > 0) {
+        // Push current line if there was a \n
+        allLines.push({ chunks: currentLineChunks, length: currentLength });
+        currentLineChunks = [];
+        currentLength = 0;
+      }
+      if (part.length > 0) {
+        currentLineChunks.push({
+          text: part,
+          onClick: chunk.onClick,
+          className: chunk.className,
+        });
+        currentLength += part.length;
+      }
+    });
+  });
 
-  for (let i = 0; i < topPadding; i++) {
-    paddedContent.push(createEmptyLine());
-  }
-  for (const line of content) {
-    const lineLength = line.length;
-    const leftPadding = Math.floor((width - lineLength) / 2);
-    const rightPadding = width - leftPadding - lineLength;
-    paddedContent.push([
-      ...Array(leftPadding).fill({ char: ' ' }),
-      ...line,
-      ...Array(rightPadding).fill({ char: ' ' }),
-    ]);
-  }
-  for (let i = 0; i < bottomPadding; i++) {
-    paddedContent.push(createEmptyLine());
+  if (currentLineChunks.length > 0) {
+    allLines.push({ chunks: currentLineChunks, length: currentLength });
   }
 
-  // Build the border if needed
-  let finalContent: ColoredChar[][] = [];
-  if (border) {
-    const topBorder = [
-      { char: '┌' },
-      ...Array(width).fill({ char: '─' }),
-      { char: '┐' }
-    ];
-    const bottomBorder = [
-      { char: '└' },
-      ...Array(width).fill({ char: '─' }),
-      { char: '┘' }
-    ];
-    finalContent.push(topBorder);
-    for (const line of paddedContent) {
-      finalContent.push([
-        { char: '│' },
-        ...line,
-        { char: '│' }
-      ]);
-    }
-    finalContent.push(bottomBorder);
-  } else {
-    finalContent = paddedContent;
+  if (allLines.length > height) {
+    throw new Error(`Content is taller than the specified height (${height} lines).`);
   }
 
-  const defaultTextColor = 'var(--color-textDark)';
-  const defaultBackgroundColor = 'var(--color-primaryDark)';
+  const topPadding = Math.floor((height - allLines.length) / 2);
+  const bottomPadding = height - topPadding - allLines.length;
 
-  // Render as <pre> preserving spacing
+  const leftPadding = (lineLength: number) => Math.floor((width - lineLength) / 2);
+  const rightPadding = (lineLength: number) => width - lineLength - leftPadding(lineLength);
+
   return (
-    <pre className="font-mono text-base leading-tight whitespace-pre inline-block bg-primaryDark p-0 m-0">
-    {finalContent.map((line, y) => (
-      <div key={y} className="flex">
-        {line.map((coloredChar, x) => (
-          <span
-            key={x}
-            style={{
-              color: coloredChar.fgColor || defaultTextColor,
-              backgroundColor: coloredChar.bgColor || defaultBackgroundColor,
-            }}
-          >
-            {coloredChar.char}
+    <pre className="font-mono text-base leading-tight whitespace-pre inline-block p-0 m-0 group cursor-default">
+      {/* Top padding */}
+      {Array.from({ length: topPadding }).map((_, i) => (
+        <div key={`top-pad-${i}`}>&nbsp;</div>
+      ))}
+
+      {/* Actual content */}
+      {allLines.map((line, idx) => (
+        <div key={idx} className="flex justify-center">
+          <span className="flex">
+            <span>{' '.repeat(leftPadding(line.length))}</span>
+            {line.chunks.map((chunk, j) => (
+              <span
+                key={j}
+                onClick={chunk.onClick}
+                className={`
+                  ${chunk.className || ''}
+                  ${chunk.onClick ? 'cursor-pointer' : ''}
+                `}
+              >
+                {chunk.text}
+              </span>
+            ))}
+            <span>{' '.repeat(rightPadding(line.length))}</span>
           </span>
-        ))}
-      </div>
-    ))}
-  </pre>
+        </div>
+      ))}
+
+      {/* Bottom padding */}
+      {Array.from({ length: bottomPadding }).map((_, i) => (
+        <div key={`bottom-pad-${i}`}>&nbsp;</div>
+      ))}
+    </pre>
   );
 };

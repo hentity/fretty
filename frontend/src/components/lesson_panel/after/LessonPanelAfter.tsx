@@ -1,32 +1,49 @@
-import { useLesson } from '../../../context/LessonContext'
+import { useLesson } from '../../../context/LessonContext';
+import { TextBox } from '../../../components/TextBox';
+import { TextContainer } from '../../../components/TextContainer';
+import { makeTextBlock } from '../../../styling/stylingUtils';
+import { useEffect, useState } from 'react';
+import { ColoredChunk } from '../../../types';
 
 function LessonPanelAfter() {
-  const { completedSpots } = useLesson()
+  const { completedSpots } = useLesson();
+  const [content, setContent] = useState<ColoredChunk[]>([]);
 
-  if (completedSpots.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-sm border border-dashed border-borderDebug">
-        No spots reviewed today.
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (completedSpots.length === 0) {
+      setContent(makeTextBlock([
+        { text: "No spots reviewed today.", className: 'text-fg' }
+      ]));
+      return;
+    }
+
+    const reviewChunks: ColoredChunk[] = [
+      { text: "Lesson Review\n\n", className: 'text-fg font-bold' },
+    ];
+
+    completedSpots.forEach((spot) => {
+      reviewChunks.push({
+        text: `String: ${spot.string}  Note: ${spot.note}\n`,
+        className: 'text-fg',
+      });
+    });
+
+    setContent(makeTextBlock(reviewChunks));
+  }, [completedSpots]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto p-4 border border-dashed border-borderDebug text-textLight">
-      <h2 className="text-lg font-bold mb-4">Lesson Review</h2>
-      <ul className="space-y-2 w-full max-w-md">
-        {completedSpots.map((spot, index) => (
-          <li
-            key={index}
-            className="flex justify-between px-4 py-2 bg-primaryLight rounded shadow-sm"
-          >
-            <span>String: {spot.string}</span>
-            <span>Note: {spot.note}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="flex justify-center items-start w-full h-full overflow-y-auto">
+      <TextContainer width={80} height={21}>
+        <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
+          <TextBox
+            width={40}
+            height={21}
+            content={content}
+          />
+        </div>
+      </TextContainer>
     </div>
-  )
+  );
 }
 
-export default LessonPanelAfter
+export default LessonPanelAfter;

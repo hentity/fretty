@@ -20,14 +20,8 @@ export interface Progress {
   spots: Spot[];
 }
 
-export type ColoredChar = {
-  char: string;
-  fgColor?: string; // text color
-  bgColor?: string; // background color
-};
-
 export type ColoredChunk = {
   text: string;
-  fgColor?: string;
-  bgColor?: string;
+  onClick?: () => void;
+  className?: string;
 };

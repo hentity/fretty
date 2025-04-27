@@ -1,45 +1,62 @@
-import { buildLesson, previewLesson } from '../../../logic/lessonUtils'
-import { useAuth } from '../../../context/UserContext'
-import useProgress from '../../../hooks/useProgress'
+import { buildLesson, previewLesson } from '../../../logic/lessonUtils';
+import { useAuth } from '../../../context/UserContext';
+import useProgress from '../../../hooks/useProgress';
+import { TextBox } from '../../../components/TextBox';
+import { TextContainer } from '../../../components/TextContainer';
+import { makeTextBlock } from '../../../styling/stylingUtils';
+import { useEffect, useState } from 'react';
+import { ColoredChunk } from '../../../types';
+import { useLesson } from '../../../context/LessonContext';
 
 function LessonPanelBefore() {
-  const { user } = useAuth()
-  const { progress } = useProgress(user)
+  const { progress } = useLesson();
 
-  if (!progress) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-sm border border-dashed border-borderDebug">
-        Loading progress...
-      </div>
-    )
-  }
+  const [content, setContent] = useState<ColoredChunk[]>([]);
 
-  const lessonPreview = previewLesson(progress)
+  useEffect(() => {
+    if (!progress) {
+      setContent(makeTextBlock([
+        { text: "Loading progress...", className: 'text-fg' }
+      ]));
+      return;
+    }
 
-  if (lessonPreview.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-sm border border-dashed border-borderDebug">
-        No spots to review today.
-      </div>
-    )
-  }
+    const lessonPreview = previewLesson(progress);
+
+    if (lessonPreview.length === 0) {
+      setContent(makeTextBlock([
+        { text: "No spots to review today.", className: 'text-fg' }
+      ]));
+      return;
+    }
+
+    const lessonChunks: ColoredChunk[] = [
+      { text: "Lesson Preview\n\n", className: 'text-fg font-bold' },
+    ];
+
+    lessonPreview.forEach((spot) => {
+      lessonChunks.push({
+        text: `String: ${spot.string}  Note: ${spot.note}\n`,
+        className: 'text-fg',
+      });
+    });
+
+    setContent(makeTextBlock(lessonChunks));
+  }, [progress]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-start overflow-y-auto p-4 border border-dashed border-borderDebug text-textLight">
-      <h2 className="text-lg font-bold mb-4">Lesson Preview</h2>
-      <ul className="space-y-2 w-full max-w-md">
-        {lessonPreview.map((spot, index) => (
-          <li
-            key={index}
-            className="flex justify-between px-4 py-2 bg-primaryLight rounded shadow-sm"
-          >
-            <span>String: {spot.string}</span>
-            <span>Note: {spot.note}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="flex justify-center items-start w-full h-full overflow-y-auto">
+      <TextContainer width={80} height={21}>
+        <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
+          <TextBox
+            width={40}
+            height={21}
+            content={content}
+          />
+          </div>
+      </TextContainer>
     </div>
-  )
+  );
 }
 
-export default LessonPanelBefore
+export default LessonPanelBefore;

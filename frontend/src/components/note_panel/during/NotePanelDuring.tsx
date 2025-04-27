@@ -1,24 +1,110 @@
-import { useLesson } from '../../../context/LessonContext'
-import { LEARNING_GOOD_ATTEMPTS } from '../../../logic/lessonUtils'
+import { ColoredChunk } from '../../../types';
+import { useLesson } from '../../../context/LessonContext';
+import { LEARNING_GOOD_ATTEMPTS } from '../../../logic/lessonUtils';
+import { TextContainer } from '../../../components/TextContainer';
+import { TextBox } from '../../../components/TextBox';
+import { makeTextBlock } from '../../../styling/stylingUtils';
+import { asciiArtMap } from '../../../styling/asciiArt';
 
 function NotePanelDuring() {
-  const { currentSpot } = useLesson()
+  const { currentSpot, result } = useLesson();
 
   if (!currentSpot) {
+    const noSpotContent = makeTextBlock([
+      { text: "No spot selected.", className: 'text-fg' }
+    ]);
+
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        No spot selected.
+      <div className="flex justify-center items-center w-full h-full">
+        <TextContainer width={20} height={21}>
+          <div className="flex flex-col items-center justify-center w-full h-full">
+            <TextBox width={20} height={3} content={noSpotContent} />
+          </div>
+        </TextContainer>
       </div>
-    )
+    );
   }
 
+  const stringNumber = currentSpot?.string + 1;
+
+  const stringSuffix = (n: number) => {
+    if (n === 1) return 'st';
+    if (n === 2) return 'nd';
+    if (n === 3) return 'rd';
+    return 'th';
+  };
+
+  const stringName = stringNumber !== undefined ? `${stringNumber}${stringSuffix(stringNumber)} string` : '';
+
+  const stringContent = makeTextBlock([
+    { text: stringName, className: 'text-fg font-bold' }
+  ]);
+
+  const noteArtRaw = asciiArtMap[currentSpot.note as keyof typeof asciiArtMap] || currentSpot.note;
+
+  const noteArtContent = makeTextBlock([
+    { text: noteArtRaw.trim(), className: 'text-fg font-bold' }
+  ]);
+
+  // Progress indicators
+  const filledSymbol = '■';
+  const emptySymbol = '□';
+
+  // 🔥 New: map result -> color
+  const resultToColorClass = {
+    easy: 'text-easy',
+    good: 'text-good',
+    hard: 'text-hard',
+    fail: 'text-fail'
+  } as const;
+
+  const progressColorClass = result ? resultToColorClass[result] : 'text-fg'; // default if no result yet
+
+  const progressMarkers = Array(LEARNING_GOOD_ATTEMPTS).fill(emptySymbol)
+    .map((marker, idx) => idx < currentSpot.good_attempts ? filledSymbol : emptySymbol)
+    .join(' ');
+
+  const progressContent = makeTextBlock([
+    { text: progressMarkers, className: `${progressColorClass} font-bold` }
+  ]);
+
+  // Feedback label if result exists
+  const feedbackMap = {
+    easy: { text: " Easy! ", className: "bg-easy text-bg font-bold" },
+    good: { text: " Good. ", className: "bg-good text-bg font-bold" },
+    hard: { text: " Hard... ", className: "bg-hard text-bg font-bold" },
+    fail: { text: " Fail. ", className: "bg-fail text-bg font-bold" },
+  } as const;
+
+  const feedbackContent = result
+    ? makeTextBlock([
+        {
+          text: feedbackMap[result].text,
+          className: feedbackMap[result].className,
+        }
+      ])
+    : null;
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center text-center">
-      <div className="text-xl font-bold mb-2">Note: {currentSpot.note}</div>
-      <div className="text-lg">String: {currentSpot.string}</div>
-      <div className="text-lg">Note progress: {currentSpot.good_attempts} / {LEARNING_GOOD_ATTEMPTS} </div>
+    <div className="flex justify-center items-center w-full h-full">
+      <TextContainer width={20} height={21}>
+        <div className="flex flex-col items-center justify-start w-full h-full gap-2">
+          {/* Blank spacer */}
+          <TextBox width={20} height={1} content={makeTextBlock([{ text: '' }])} />
+          
+          {/* Main content */}
+          <TextBox width={20} height={1} content={stringContent} />
+          <TextBox width={20} height={6} content={noteArtContent} />
+          <TextBox width={20} height={1} content={progressContent} />
+
+          {/* Feedback label */}
+          {feedbackContent && (
+            <TextBox width={20} height={1} content={feedbackContent} />
+          )}
+        </div>
+      </TextContainer>
     </div>
-  )
+  );
 }
 
-export default NotePanelDuring 
+export default NotePanelDuring;

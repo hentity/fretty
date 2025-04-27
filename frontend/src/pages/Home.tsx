@@ -17,7 +17,7 @@ import LessonPanelAfter from '../components/lesson_panel/after/LessonPanelAfter'
 
 function Home() {
   const { user, loading } = useContext(UserContext)
-  const { lessonStatus, setLessonStatus, startLesson, advanceDay } = useLesson()
+  const { lessonStatus, setLessonStatus, advanceDay } = useLesson()
   const { progress, setProgress, saveProgress } = useProgress(user)
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null)
 
@@ -30,53 +30,59 @@ function Home() {
   }
 
   const resetProgress = async () => {
-    if (!user) return
-    const ref = doc(db, 'progress', user.uid)
-    const defaultProgress = createDefaultProgress()
-    await setDoc(ref, defaultProgress)
-    setProgress(defaultProgress)
-    setLessonStatus('before')
-    setCurrentSpot(null)
-    console.log('Progress reset to default.')
-  }
+    if (!saveProgress) return; // Make sure you have saveProgress function from useProgress
+  
+    const defaultProgress = createDefaultProgress();
+  
+    if (user) {
+      // user is logged in -> reset in Firestore
+      const ref = doc(db, 'progress', user.uid);
+      await setDoc(ref, defaultProgress);
+      console.log('Progress reset to default in Firestore.');
+    } else {
+      // guest user -> reset in localStorage
+      try {
+        localStorage.setItem('fretty_guest_progress', JSON.stringify(defaultProgress));
+        console.log('Guest progress reset to default in localStorage.');
+      } catch (err) {
+        console.error('Failed to reset guest progress in localStorage.', err);
+      }
+    }
+  
+    // update app state too
+    setProgress(defaultProgress);
+    setLessonStatus('before');
+    setCurrentSpot(null);
+  };
+  
 
   if (loading) return <p>Loading user...</p>
   return (
     <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
-      <div
-        className="aspect-[21/9] w-[100vw] h-auto max-w-[1024px] max-h-[calc(1024px*(9/21))] border"
-        style={{
-          height: 'min(calc((100vw * 9 / 21)), calc(100vh - 4rem))',
-        }}
-      >
-        <div className="flex w-full h-full">
+        <div className="flex border border-borderDebug">
           {/* Note Panel */}
-          <div className="w-1/4 h-full flex flex-col justify-center m-1">
-            <div className="flex-1 flex items-center justify-center m-1 border border-borderDebug">
+          <div className="h-full flex justify-center">
               {lessonStatus === 'before' && (
                 <NotePanelBefore />
               )}
               {lessonStatus === 'during' && (
-                <NotePanelDuring lessonStatus={lessonStatus}/>
+                <NotePanelDuring/>
               )}
               {lessonStatus === 'after' && <NotePanelAfter />}
-            </div>
           </div>
 
           {/* Lesson Panel */}
-          <div className="w-3/4 h-full flex justify-center m-1">
-            <div className="flex w-full flex-col items-center justify-center m-1 border border-borderDebug">
+          <div className="h-full flex justify-center">
               {lessonStatus === 'before' && <LessonPanelBefore />}
               {lessonStatus === 'during' && (
                 <LessonPanelDuring/>
               )}
               {lessonStatus === 'after' && <LessonPanelAfter />}
-            </div>
           </div>
-        </div>
       </div>
 
       {/* Debug lessonStatus toggle */}
+      <div className='flex gap-2'>
       <button
         onClick={cycleLessonStatus}
         className="mt-4 px-4 py-2 bg-primaryLight"
@@ -95,6 +101,7 @@ function Home() {
       >
         Advance 1 Day
       </button>
+      </div>
     </div>
   )
 }
