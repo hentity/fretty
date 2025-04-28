@@ -13,10 +13,10 @@ function NotePanelBefore() {
   return (
     <div className="flex justify-center items-center w-full h-full">
       <TextContainer width={22} height={21}>
-        <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
+        <div className="flex flex-col items-center justify-center w-full h-full">
           <TextBox
             width={16}
-            height={4}
+            height={3}
             content={buttonContent}
           />
         </div>

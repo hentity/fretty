@@ -47,7 +47,7 @@ function LessonPanelBefore() {
   return (
     <div className="flex justify-center items-start w-full h-full overflow-y-auto">
       <TextContainer width={80} height={21}>
-        <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
+        <div className="flex flex-col items-center justify-center w-full h-full">
           <TextBox
             width={40}
             height={21}

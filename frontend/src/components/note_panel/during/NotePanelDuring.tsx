@@ -88,7 +88,7 @@ function NotePanelDuring() {
   return (
     <div className="flex justify-center items-center w-full h-full">
       <TextContainer width={20} height={21}>
-        <div className="flex flex-col items-center justify-start w-full h-full gap-2">
+        <div className="flex flex-col items-center justify-center w-full h-full">
           {/* Blank spacer */}
           <TextBox width={20} height={1} content={makeTextBlock([{ text: '' }])} />
           
