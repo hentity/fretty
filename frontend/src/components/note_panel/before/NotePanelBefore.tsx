@@ -7,7 +7,7 @@ function NotePanelBefore() {
   const { startLesson } = useLesson();
 
   const buttonContent = makeTextBlock([
-    { text: '                \n  Start Lesson  \n                ', onClick: startLesson, className: 'font-bold bg-good text-bg group-hover:brightness-110' },
+    { text: '                \n  Start Lesson  \n                ', onClick: startLesson, className: ' font-bold bg-good text-bg group-hover:brightness-110' },
   ]);
 
   return (

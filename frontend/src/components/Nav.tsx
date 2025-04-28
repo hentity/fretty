@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/UserContext';
-import useProgress from '../hooks/useProgress';
 import { TextBox } from '../components/TextBox';
 import { makeTextBlock } from '../styling/stylingUtils';
 import { useEffect, useState } from 'react';

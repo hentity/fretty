@@ -85,19 +85,19 @@ function Home() {
       <div className='flex gap-2'>
       <button
         onClick={cycleLessonStatus}
-        className="mt-4 px-4 py-2 bg-primaryLight"
+        className="mt-4 px-4 py-2 bg-primaryLight hover:bg-gray-500 hover:cursor-pointer"
       >
         Next Lesson Status ({lessonStatus})
       </button>
       <button
         onClick={resetProgress}
-        className="mt-4 px-4 py-2 bg-primaryLight"
+        className="mt-4 px-4 py-2 bg-primaryLight hover:bg-gray-500 hover:cursor-pointer"
       >
         Reset Progress
       </button>
       <button
         onClick={advanceDay}
-        className="mt-4 px-4 py-2 bg-primaryLight"
+        className="mt-4 px-4 py-2 bg-primaryLight hover:bg-gray-500 hover:cursor-pointer"
       >
         Advance 1 Day
       </button>
