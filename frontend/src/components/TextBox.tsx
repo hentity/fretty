@@ -57,7 +57,7 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content }) => {
 
       {/* Actual content */}
       {allLines.map((line, idx) => (
-        <div key={idx} className="flex justify-center">
+        <div key={idx} className="flex justify-center select-none">
           <span className="flex">
             <span>{' '.repeat(leftPadding(line.length))}</span>
             {line.chunks.map((chunk, j) => (

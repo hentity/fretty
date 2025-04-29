@@ -10,6 +10,7 @@ const MASTERED_THRESHOLD = 10;
 
 function Nav() {
   const navigate = useNavigate();
+  const currentPath = window.location.pathname;
   const { progress } = useLesson();
   const { user } = useAuth();
 
@@ -17,6 +18,7 @@ function Nav() {
   const [middleContent, setMiddleContent] = useState<ColoredChunk[]>([]);
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
 
+  // Renders the contents of the nav bar reactively based on the current path. (Needs to be useeffect since we are updating use States)
   useEffect(() => {
     let practicingCount = 0;
     let masteredCount = 0;
@@ -37,11 +39,23 @@ function Nav() {
     }
 
     // Left TextBox
-    setLeftContent(makeTextBlock([
-      user
-        ? { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/') }
-        : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
-    ]));
+    if (currentPath === '/auth') {
+      setLeftContent(makeTextBlock([
+        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      ]));
+    }else if (currentPath === '/help') {
+      setLeftContent(makeTextBlock([
+        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      ]));
+    }
+    else{
+      setLeftContent(makeTextBlock([
+        user
+          ? { text: '[ Sign Out ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/auth') }
+          : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
+      ]));
+    }
+    
 
     // Middle TextBox
     const middleChunks: ColoredChunk[] = [];
@@ -57,14 +71,16 @@ function Nav() {
 
     // Right TextBox
     setRightContent(makeTextBlock([
-      { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
+      currentPath == '/help' 
+      ? { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      : { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
     ]));
-  }, [user, progress, navigate]);
+  }, [user, progress, navigate, currentPath]);
 
   return (
-    <div className="flex justify-between items-center w-full px-4">
+    <div className="flex justify-between items-center w-full px-4 select-none">
       <TextBox width={15} height={3} content={leftContent} />
-      <TextBox width={80} height={3} content={middleContent} />
+      <TextBox width={80} height={3} content={middleContent} /> 
       <TextBox width={15} height={3} content={rightContent} />
     </div>
   );
