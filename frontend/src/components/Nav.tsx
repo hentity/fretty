@@ -80,7 +80,7 @@ function Nav() {
 
     // Right TextBox
     if (currentPath === '/profile') {
-      setRightContent(makeTextBlock([{ text: '[ Sign Out ]', className: 'text-fg bg-red-500 hover:bg-red-400  font-bold', onClick: logout }]));
+      setRightContent(makeTextBlock([{ text: '[ Sign Out ]', className: 'text-fg  font-bold hover:text-bg hover:bg-fg', onClick: logout }]));
     } else if (currentPath === '/help'){
       setRightContent(makeTextBlock([
         { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
