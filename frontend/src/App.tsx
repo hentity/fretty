@@ -5,6 +5,7 @@ import Auth from './pages/Auth'
 import Help from './pages/Help'
 import Nav from './components/Nav'
 import TextTest from './pages/TextTest'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile/>} />
           <Route path="/help" element={<Help />} />
           <Route path="/textTest" element={<TextTest />} />
         </Routes>

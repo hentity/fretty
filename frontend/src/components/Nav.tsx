@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 import { useAuth } from '../context/UserContext';
 import { TextBox } from '../components/TextBox';
 import { makeTextBlock } from '../styling/stylingUtils';
@@ -17,6 +19,9 @@ function Nav() {
   const [leftContent, setLeftContent] = useState<ColoredChunk[]>([]);
   const [middleContent, setMiddleContent] = useState<ColoredChunk[]>([]);
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
+
+  // Sign out functions 
+
 
   // Renders the contents of the nav bar reactively based on the current path. (Needs to be useeffect since we are updating use States)
   useEffect(() => {
@@ -39,20 +44,16 @@ function Nav() {
     }
 
     // Left TextBox
-    if (currentPath === '/auth') {
+    if (currentPath === '/') {
       setLeftContent(makeTextBlock([
-        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
-      ]));
-    }else if (currentPath === '/help') {
-      setLeftContent(makeTextBlock([
-        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+        user
+          ? { text: '[ Profile ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/profile') }
+          : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
       ]));
     }
     else{
       setLeftContent(makeTextBlock([
-        user
-          ? { text: '[ Sign Out ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/auth') }
-          : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
+        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
       ]));
     }
     
