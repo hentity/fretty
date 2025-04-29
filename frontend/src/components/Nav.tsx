@@ -21,7 +21,15 @@ function Nav() {
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
 
   // Sign out functions 
-
+  const logout = async () => {
+    try {
+        await signOut(auth);
+        console.log('User signed out successfully.');
+        navigate('/'); // Redirect to home page after sign out
+    } catch (error) {
+        console.error('Error signing out:', error);
+    }
+};
 
   // Renders the contents of the nav bar reactively based on the current path. (Needs to be useeffect since we are updating use States)
   useEffect(() => {
@@ -71,11 +79,17 @@ function Nav() {
     setMiddleContent(makeTextBlock(middleChunks));
 
     // Right TextBox
-    setRightContent(makeTextBlock([
-      currentPath == '/help' 
-      ? { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
-      : { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
-    ]));
+    if (currentPath === '/profile') {
+      setRightContent(makeTextBlock([{ text: '[ Sign Out ]', className: 'text-fg bg-red-500 hover:bg-red-400  font-bold', onClick: logout }]));
+    } else if (currentPath === '/help'){
+      setRightContent(makeTextBlock([
+        { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      ]));
+    }else {
+      setRightContent(makeTextBlock([
+        { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
+      ]));
+    }
   }, [user, progress, navigate, currentPath]);
 
   return (

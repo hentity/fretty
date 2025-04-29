@@ -1,4 +1,4 @@
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { auth, provider, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createDefaultProgress } from '../logic/progressUtils';
