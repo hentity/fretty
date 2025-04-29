@@ -10,7 +10,7 @@ export function createDefaultProgress(): Progress {
 
   const spots: Spot[] = []
   for (let string = 0; string < 6; string++) {
-    for (let fret = 0; fret < 12; fret++) {
+    for (let fret = 1; fret <= 12; fret++) {
       const { note, octave } = spotToNote(string, fret, tuning)
       let status: Spot['status'] = "unseen"
       if (note.length > 1) { status = "unlearnable" }

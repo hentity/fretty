@@ -31,7 +31,7 @@ function LessonPanelBefore() {
     }
 
     const lessonChunks: ColoredChunk[] = [
-      { text: "Lesson Preview\n\n", className: 'text-fg font-bold' },
+      { text: "Lesson Preview\n", className: 'text-fg font-bold' },
     ];
 
     lessonPreview.forEach((spot) => {
@@ -46,11 +46,11 @@ function LessonPanelBefore() {
 
   return (
     <div className="flex justify-center items-start w-full h-full overflow-y-auto">
-      <TextContainer width={80} height={21}>
+      <TextContainer width={60} height={12}>
         <div className="flex flex-col items-center justify-center w-full h-full">
           <TextBox
             width={40}
-            height={21}
+            height={12}
             content={content}
           />
           </div>

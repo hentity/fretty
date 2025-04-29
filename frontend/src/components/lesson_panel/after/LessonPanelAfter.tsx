@@ -33,7 +33,7 @@ function LessonPanelAfter() {
 
   return (
     <div className="flex justify-center items-start w-full h-full overflow-y-auto">
-      <TextContainer width={80} height={21}>
+      <TextContainer width={60} height={12}>
         <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
           <TextBox
             width={40}

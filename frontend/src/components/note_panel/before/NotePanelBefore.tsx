@@ -12,8 +12,8 @@ function NotePanelBefore() {
 
   return (
     <div className="flex justify-center items-center w-full h-full">
-      <TextContainer width={22} height={21}>
-        <div className="flex flex-col items-center justify-center w-full h-full">
+      <TextContainer width={18} height={12}>
+        <div className="flex flex-col items-right justify-center w-full h-full">
           <TextBox
             width={16}
             height={3}

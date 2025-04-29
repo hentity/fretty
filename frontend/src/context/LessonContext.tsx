@@ -3,6 +3,7 @@ import { Spot, Progress } from '../types'
 
 export type LessonStatus = 'before' | 'during' | 'after'
 export type PracticeResult = 'easy' | 'good' | 'hard' | 'fail' | null
+export type Highlight = { string: number; fret: number; className: string };
 
 export type LessonContextType = {
   lessonStatus: LessonStatus;
@@ -16,6 +17,9 @@ export type LessonContextType = {
   advance: (newResult: PracticeResult) => void;
   advanceDay: () => void;
   progress: Progress | null; // <--- Add this line
+  highlight: Highlight | null;
+  highlightSpot: (stringNo: number, fretNo: number, colourClass: string, duration?: number) => void;
+  isPausing: boolean;
 };
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)

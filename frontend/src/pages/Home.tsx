@@ -59,9 +59,9 @@ function Home() {
   if (loading) return <p>Loading user...</p>
   return (
     <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
-        <div className="flex border border-borderDebug gap-2">
+        <div className="flex border border-borderDebug">
           {/* Note Panel */}
-          <div className="h-full flex justify-center bg-stone-900">
+          <div className="h-full flex justify-right">
               {lessonStatus === 'before' && (
                 <NotePanelBefore />
               )}
@@ -72,7 +72,7 @@ function Home() {
           </div>
 
           {/* Lesson Panel */}
-          <div className="h-full flex justify-center bg-stone-900">
+          <div className="h-full flex justify-center">
               {lessonStatus === 'before' && <LessonPanelBefore />}
               {lessonStatus === 'during' && (
                 <LessonPanelDuring/>

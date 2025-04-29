@@ -49,7 +49,7 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content }) => {
   const rightPadding = (lineLength: number) => width - lineLength - leftPadding(lineLength);
 
   return (
-    <pre className="font-mono text-base leading-tight whitespace-pre inline-block p-0 m-0 group cursor-default">
+    <pre className="font-mono text-base text-xl whitespace-pre inline-block p-0 m-0 group cursor-default">
       {/* Top padding */}
       {Array.from({ length: topPadding }).map((_, i) => (
         <div key={`top-pad-${i}`}>&nbsp;</div>

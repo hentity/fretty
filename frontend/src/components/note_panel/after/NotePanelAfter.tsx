@@ -9,10 +9,10 @@ function NotePanelAfter() {
 
   return (
     <div className="flex justify-center items-center w-full h-full">
-      <TextContainer width={22} height={21}>
+      <TextContainer width={18} height={12}>
         <div className="flex flex-col items-center justify-center w-full h-full border border-borderDebug">
           <TextBox
-            width={20}
+            width={16}
             height={3}
             content={content}
           />

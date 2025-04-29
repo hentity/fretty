@@ -10,10 +10,10 @@ type TextContainerProps = {
 export const TextContainer: React.FC<TextContainerProps> = ({ width, height, children }) => {
   return (
     <div
-      className="relative overflow-hidden font-mono text-base leading-tight whitespace-pre select-none"
+      className="relative overflow-hidden font-mono text-base text-xl whitespace-pre select-none"
       style={{
         width: `${width}ch`,
-        height: `${height}em`, 
+        height: `calc(${height} * 1lh)`,
       }}
     >
       {children}
