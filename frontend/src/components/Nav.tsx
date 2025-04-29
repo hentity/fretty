@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
 import { useAuth } from '../context/UserContext';
 import { TextBox } from '../components/TextBox';
 import { makeTextBlock } from '../styling/stylingUtils';
@@ -10,6 +12,7 @@ const MASTERED_THRESHOLD = 10;
 
 function Nav() {
   const navigate = useNavigate();
+  const currentPath = window.location.pathname;
   const { progress } = useLesson();
   const { user } = useAuth();
 
@@ -17,6 +20,18 @@ function Nav() {
   const [middleContent, setMiddleContent] = useState<ColoredChunk[]>([]);
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
 
+  // Sign out functions 
+  const logout = async () => {
+    try {
+        await signOut(auth);
+        console.log('User signed out successfully.');
+        navigate('/'); // Redirect to home page after sign out
+    } catch (error) {
+        console.error('Error signing out:', error);
+    }
+};
+
+  // Renders the contents of the nav bar reactively based on the current path. (Needs to be useeffect since we are updating use States)
   useEffect(() => {
     let practicingCount = 0;
     let masteredCount = 0;
@@ -37,11 +52,19 @@ function Nav() {
     }
 
     // Left TextBox
-    setLeftContent(makeTextBlock([
-      user
-        ? { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/') }
-        : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
-    ]));
+    if (currentPath === '/') {
+      setLeftContent(makeTextBlock([
+        user
+          ? { text: '[ Profile ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold ', onClick: () => navigate('/profile') }
+          : { text: '[ Sign In ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/auth') }
+      ]));
+    }
+    else{
+      setLeftContent(makeTextBlock([
+        { text: '[ Home ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      ]));
+    }
+    
 
     // Middle TextBox
     const middleChunks: ColoredChunk[] = [];
@@ -56,15 +79,23 @@ function Nav() {
     setMiddleContent(makeTextBlock(middleChunks));
 
     // Right TextBox
-    setRightContent(makeTextBlock([
-      { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
-    ]));
-  }, [user, progress, navigate]);
+    if (currentPath === '/profile') {
+      setRightContent(makeTextBlock([{ text: '[ Sign Out ]', className: 'text-fg  font-bold hover:text-bg hover:bg-fg', onClick: logout }]));
+    } else if (currentPath === '/help'){
+      setRightContent(makeTextBlock([
+        { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/') }
+      ]));
+    }else {
+      setRightContent(makeTextBlock([
+        { text: '[ Help ]', className: 'text-fg hover:bg-fg hover:text-bg font-bold', onClick: () => navigate('/help') }
+      ]));
+    }
+  }, [user, progress, navigate, currentPath]);
 
   return (
-    <div className="flex justify-between items-center w-full px-4">
+    <div className="flex justify-between items-center w-full px-4 select-none">
       <TextBox width={15} height={3} content={leftContent} />
-      <TextBox width={80} height={3} content={middleContent} />
+      <TextBox width={80} height={3} content={middleContent} /> 
       <TextBox width={15} height={3} content={rightContent} />
     </div>
   );

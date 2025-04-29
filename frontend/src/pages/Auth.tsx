@@ -1,9 +1,11 @@
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { auth, provider, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createDefaultProgress } from '../logic/progressUtils';
 import { useAuth } from '../context/UserContext';
 import { Progress } from '../types';
+import { Navigate } from 'react-router-dom';
+
 
 const LOCAL_STORAGE_KEY = 'guest_progress';
 
@@ -44,6 +46,7 @@ async function createProgressIfMissing(uid: string) {
 function Auth() {
   const { user } = useAuth();
 
+
   const login = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -56,36 +59,23 @@ function Auth() {
       console.error('Login error:', err);
     }
   };
-
-  const logout = () => {
-    signOut(auth);
-  };
-
+   
+  
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-6">
-      <h2 className="text-xl font-bold mb-4">Auth Page</h2>
-      {user ? (
-        <>
-          <p className="mb-2">Signed in as: {user.email}</p>
-          <button
-            onClick={logout}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Sign out
-          </button>
-        </>
-      ) : (
-        <>
+    user ? (<Navigate to="/" />) : // If user is logged in, redirect to home
+    (
+      <div className="flex flex-col items-center justify-center w-full h-full p-6">
+        <h2 className="text-xl font-bold mb-4">Auth Page</h2>
           <p className="mb-2">No user signed in</p>
           <button
             onClick={login}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
-            Sign in with Google
+            Sign in  with Google
           </button>
-        </>
-      )}
-    </div>
+        </div>
+    ) // Redirect to home if not logged in
+    
   );
 }
 
