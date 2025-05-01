@@ -25,6 +25,7 @@ export function createDefaultProgress(): Progress {
         note,
         octave,
         num_practices: 0,
+        is_new: true
       })
     }
   }

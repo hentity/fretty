@@ -27,19 +27,22 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   const [progress, setProgress] = useState<Progress | null>(initialProgress);
   const [lessonStatus, setLessonStatus] = useState<LessonStatus>('before');
+  const [lessonStep, setLessonStep] = useState(0);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [lessonQueue, setLessonQueue] = useState<Spot[]>([]);
   const [completed, setCompleted]     = useState<Spot[]>([]);
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null);
   const [result, setResult]           = useState<PracticeResult>(null);
   const [dayOffset, setDayOffset]     = useState(0);
   const today = todayISO(dayOffset);
+  const [isFirstLesson, setIsFirstLesson] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /*  flash/fretboard highlight state                                   */
   /* ------------------------------------------------------------------ */
   const [highlight, setHighlight] = useState<Highlight | null>(null);
   const highlightSpot = useCallback(
-    (stringNo: number, fretNo: number, colourClass: string, duration = 800) => {
+    (stringNo: number, fretNo: number, colourClass: string, duration = 1500) => {
       setHighlight({ string: stringNo, fret: fretNo, className: colourClass });
       setTimeout(() => setHighlight(null), duration);
     },
@@ -83,6 +86,13 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setCurrentSpot(first);
     setLessonStatus('during');
     saveProgress(progress);
+
+    if (progress.spots.every((s) => s.all_attempts === 0)) {
+      setIsFirstLesson(true);
+      setTutorialStep(0);
+    } else {
+      setIsFirstLesson(false);
+    }
   };
 
   /* ------------------------------------------------------------------ */
@@ -91,7 +101,15 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const endLesson = (finalSpot: Spot) => {
     if (!progress) return;
 
-    const updatedProgress = { ...progress, last_review_date: today };
+    const updatedProgress: Progress = {
+      ...progress,
+      last_review_date: today,
+      spots: progress.spots.map((s) =>
+        s.string === finalSpot.string && s.fret === finalSpot.fret
+          ? finalSpot
+          : s
+      ),
+    };
     delete updatedProgress.review_date_to_spots[today];
     setProgress(updatedProgress);
     saveProgress(updatedProgress);
@@ -111,6 +129,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       const [next, rest] = getNextRandomSpot(queue);
       setLessonQueue(rest);
+      setLessonStep((prev) => prev + 1);
       setCurrentSpot(next);
       setResult(null);
       setIsPausing(false); // resume timer
@@ -121,12 +140,33 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /*  advance after a practice attempt                                 */
   /* ------------------------------------------------------------------ */
   const advance = (newResult: PracticeResult) => {
-    if (!currentSpot || newResult === null || !progress) return;
-
+    if (!currentSpot || !progress) return;
+  
+    if (newResult === null) {
+      // get next from the current queue
+      const [next, rest] = getNextRandomSpot(lessonQueue);
+    
+      // re-add the current spot to the end
+      rest.push(currentSpot);
+    
+      setLessonQueue(rest);
+      setCurrentSpot(next);
+      setResult(null);
+      setIsPausing(false);
+    
+      if (tutorialStep >= 3) {
+        setLessonStep((prev) => prev + 1);
+        setIsFirstLesson(false);
+      }
+      setTutorialStep((step) => step + 1);
+      return;
+    }
+    
+  
     // update spot progress
     const updatedSpot = addAttempt({ ...currentSpot }, newResult);
     setResult(newResult);
-
+  
     const newProgress: Progress = {
       ...progress,
       spots: progress.spots.map((s) =>
@@ -135,9 +175,10 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
           : s
       ),
     };
+    setCurrentSpot(updatedSpot);
     setProgress(newProgress);
     saveProgress(newProgress);
-
+  
     // flash on fretboard
     const colourMap = {
       easy: 'bg-easy',
@@ -145,13 +186,13 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       hard: 'bg-hard',
       fail: 'bg-fail',
     } as const;
-
+  
     highlightSpot(
       updatedSpot.string + 1,
-      updatedSpot.fret, // fret assumed 1-based already
+      updatedSpot.fret,
       colourMap[newResult]
     );
-
+  
     // handle queue
     let nextQueue = [...lessonQueue];
     if (updatedSpot.status === 'review') {
@@ -161,11 +202,11 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       nextQueue.push(updatedSpot);
     }
-
+  
     // pause before moving
-    setIsPausing(true); // freeze timers
-
-    setTimeout(() => goToNextOrEnd(updatedSpot, nextQueue), 800); // show feedback
+    setIsPausing(true);
+  
+    setTimeout(() => goToNextOrEnd(updatedSpot, nextQueue), 1500);
   };
 
   /* ------------------------------------------------------------------ */
@@ -179,6 +220,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const value: LessonContextType = {
     lessonStatus,
     setLessonStatus,
+    lessonStep,
     lessonQueue,
     completedSpots: completed,
     currentSpot,
@@ -191,6 +233,9 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     highlight,
     highlightSpot,
     isPausing,
+    isFirstLesson,
+    tutorialStep,
+    setTutorialStep,
   };
 
   return (

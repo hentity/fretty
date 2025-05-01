@@ -52,6 +52,8 @@ export const scheduleReview = (
     }
     target.setDate(target.getDate() + 1)
   }
+
+  console.log(progress)
 }
 function getSpotsByStatus(spots: Spot[], status: string): Spot[] {
   return spots.filter((spot) => spot.status === status)
@@ -141,6 +143,7 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
   console.log(`🎯 Before: ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}`)
 
   spot.all_attempts += 1
+  spot.is_new = false
   
   if (spot.status === 'learning' || spot.status === 'review') {
     if (result === 'fail') {

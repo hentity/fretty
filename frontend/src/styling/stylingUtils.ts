@@ -7,5 +7,6 @@ export function makeTextBlock(
     text: chunk.text,
     onClick: chunk.onClick,
     className: chunk.className,
+    noPadding: chunk.noPadding,
   }));
 }

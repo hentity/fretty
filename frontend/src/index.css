@@ -15,16 +15,16 @@
 
     --color-borderDebug: #000000;
 
-    --color-fg: #ffffff;
+    --color-fg: #fefae0;
     --color-bg: #000000;
 
-    --color-easy: #3b82f6;
-    --color-good: #10b981;
-    --color-hard: #facc15;
-    --color-fail: #ff0000;
+    --color-easy: #5498ab;
+    --color-good: #6a994e;
+    --color-hard: #e0953e;
+    --color-fail: #9e2a2b;
 
     --color-noteProgress: #00ff00;
-    --color-practiced: #6666ff;
-    --color-mastered: #ff00ff;
+    --color-practiced: #6a994e;
+    --color-mastered: #5498ab;
     --color-unpracticed: #bbbbbb;
   }

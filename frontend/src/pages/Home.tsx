@@ -7,13 +7,16 @@ import { UserContext } from '../context/UserContext'
 import { useLesson, LessonStatus } from '../context/LessonContext'
 import  { Spot } from '../types'
 
-import NotePanelBefore from '../components/note_panel/before/NotePanelBefore'
-import NotePanelDuring from '../components/note_panel/during/NotePanelDuring'
-import NotePanelAfter from '../components/note_panel/after/NotePanelAfter'
+import NotePanelBefore from '../components/before/NotePanelBefore'
+import NotePanelDuring from '../components/during/note_panel/NotePanelDuring'
+import NotePanelAfter from '../components/after/NotePanelAfter'
 
-import LessonPanelBefore from '../components/lesson_panel/before/LessonPanelBefore'
-import LessonPanelDuring from '../components/lesson_panel/during/LessonPanelDuring'
-import LessonPanelAfter from '../components/lesson_panel/after/LessonPanelAfter'
+import LessonPanelBefore from '../components/before/LessonPanelBefore'
+import LessonPanelDuring from '../components/during/lesson_panel/LessonPanelDuring'
+import LessonPanelAfter from '../components/after/LessonPanelAfter'
+import Before from '../components/before/Before'
+import During from '../components/during/During'
+import After from '../components/after/After'
 
 function Home() {
   const { user, loading } = useContext(UserContext)
@@ -59,26 +62,10 @@ function Home() {
   if (loading) return <p>Loading user...</p>
   return (
     <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
-        <div className="flex border border-borderDebug">
-          {/* Note Panel */}
-          <div className="h-full flex justify-right">
-              {lessonStatus === 'before' && (
-                <NotePanelBefore />
-              )}
-              {lessonStatus === 'during' && (
-                <NotePanelDuring/>
-              )}
-              {lessonStatus === 'after' && <NotePanelAfter />}
-          </div>
-
-          {/* Lesson Panel */}
-          <div className="h-full flex justify-center">
-              {lessonStatus === 'before' && <LessonPanelBefore />}
-              {lessonStatus === 'during' && (
-                <LessonPanelDuring/>
-              )}
-              {lessonStatus === 'after' && <LessonPanelAfter />}
-          </div>
+      <div className="flex border border-borderDebug">
+        {lessonStatus === 'before' && <Before />}
+        {lessonStatus === 'during' && <During />}
+        {lessonStatus === 'after' && <After />}
       </div>
 
       {/* Debug lessonStatus toggle */}

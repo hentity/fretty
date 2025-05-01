@@ -9,6 +9,7 @@ export type LessonContextType = {
   lessonStatus: LessonStatus;
   setLessonStatus: React.Dispatch<React.SetStateAction<LessonStatus>>;
   lessonQueue: Spot[];
+  lessonStep: number;
   completedSpots: Spot[];
   currentSpot: Spot | null;
   result: PracticeResult;
@@ -20,6 +21,9 @@ export type LessonContextType = {
   highlight: Highlight | null;
   highlightSpot: (stringNo: number, fretNo: number, colourClass: string, duration?: number) => void;
   isPausing: boolean;
+  isFirstLesson: boolean | null;
+  tutorialStep: number;
+  setTutorialStep: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)

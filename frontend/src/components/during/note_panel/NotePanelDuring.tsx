@@ -1,8 +1,8 @@
 import { ColoredChunk } from '../../../types';
 import { useLesson } from '../../../context/LessonContext';
 import { LEARNING_GOOD_ATTEMPTS } from '../../../logic/lessonUtils';
-import { TextContainer } from '../../../components/TextContainer';
-import { TextBox } from '../../../components/TextBox';
+import { TextContainer } from '../../TextContainer';
+import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import { asciiArtMap } from '../../../styling/asciiArt';
 
@@ -37,13 +37,13 @@ function NotePanelDuring() {
   const stringName = stringNumber !== undefined ? `${stringNumber}${stringSuffix(stringNumber)} string` : '';
 
   const stringContent = makeTextBlock([
-    { text: stringName, className: 'text-fg font-bold' }
+    { text: stringName, className: 'text-fg font-bold', noPadding: true }
   ]);
 
   const noteArtRaw = asciiArtMap[currentSpot.note as keyof typeof asciiArtMap] || currentSpot.note;
 
   const noteArtContent = makeTextBlock([
-    { text: noteArtRaw.trim(), className: 'text-fg font-bold' }
+    { text: noteArtRaw.trim(), className: 'text-fg font-bold', noPadding: true}
   ]);
 
   // Progress indicators
@@ -70,10 +70,10 @@ function NotePanelDuring() {
 
   // Feedback label if result exists
   const feedbackMap = {
-    easy: { text: " Easy! ", className: "bg-easy text-bg font-bold" },
-    good: { text: " Good. ", className: "bg-good text-bg font-bold" },
-    hard: { text: " Hard... ", className: "bg-hard text-bg font-bold" },
-    fail: { text: " Fail. ", className: "bg-fail text-bg font-bold" },
+    easy: { text: " easy! ", className: "bg-easy text-bg font-bold" },
+    good: { text: " good ", className: "bg-good text-bg font-bold" },
+    hard: { text: " hard ", className: "bg-hard text-bg font-bold" },
+    fail: { text: " fail ", className: "bg-fail text-bg font-bold" },
   } as const;
 
   const feedbackContent = result
@@ -81,24 +81,23 @@ function NotePanelDuring() {
         {
           text: feedbackMap[result].text,
           className: feedbackMap[result].className,
+          noPadding: true
         }
       ])
     : makeTextBlock([{text: ''}]);
 
   return (
     <div className="flex justify-center items-center w-full h-full">
-      <TextContainer width={18} height={12}>
+      <TextContainer width={11} height={9}>
         <div className="flex flex-col items-center justify-center w-full h-full">
-          {/* Blank spacer */}
-          <TextBox width={18} height={3} content={makeTextBlock([{ text: '' }])} />
           
           {/* Main content */}
-          <TextBox width={18} height={1} content={stringContent} />
-          <TextBox width={18} height={6} content={noteArtContent} />
-          <TextBox width={18} height={1} content={progressContent} />
+          <TextBox width={11} height={1} content={stringContent} />
+          <TextBox width={11} height={6} content={noteArtContent} />
+          <TextBox width={11} height={1} content={progressContent} />
 
           {/* Feedback label */}
-          <TextBox width={18} height={1} content={feedbackContent} />
+          <TextBox width={11} height={1} content={feedbackContent} />
         </div>
       </TextContainer>
     </div>

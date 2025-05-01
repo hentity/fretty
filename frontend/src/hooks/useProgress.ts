@@ -3,8 +3,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { createDefaultProgress } from '../logic/progressUtils';
 import { Progress } from '../types';
-
-const LOCAL_STORAGE_KEY = 'fretty_guest_progress';
+import { LOCAL_STORAGE_KEY } from '../pages/Auth';
 
 export default function useProgress(user: { uid: string } | null) {
   const [progress, setProgress] = useState<Progress | null>(null);

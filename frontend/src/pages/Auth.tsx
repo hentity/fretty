@@ -7,7 +7,7 @@ import { Progress } from '../types';
 import { Navigate } from 'react-router-dom';
 
 
-const LOCAL_STORAGE_KEY = 'guest_progress';
+export const LOCAL_STORAGE_KEY = 'fretty_guest_progress';
 
 // Helper to create progress if missing after login
 async function createProgressIfMissing(uid: string) {

@@ -9,6 +9,7 @@ export interface Spot {
   good_attempts: number;
   all_attempts: number;
   num_practices: number;
+  is_new: boolean;
 }
 
 export interface Progress {
@@ -24,4 +25,5 @@ export type ColoredChunk = {
   text: string;
   onClick?: () => void;
   className?: string;
+  noPadding?: boolean;
 };

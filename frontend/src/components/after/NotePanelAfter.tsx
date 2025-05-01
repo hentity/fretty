@@ -1,6 +1,6 @@
-import { TextBox } from '../../../components/TextBox';
-import { TextContainer } from '../../../components/TextContainer';
-import { makeTextBlock } from '../../../styling/stylingUtils';
+import { TextBox } from '../TextBox';
+import { TextContainer } from '../TextContainer';
+import { makeTextBlock } from '../../styling/stylingUtils';
 
 function NotePanelAfter() {
   const content = makeTextBlock([

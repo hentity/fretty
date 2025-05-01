@@ -1,12 +1,12 @@
-import { buildLesson, previewLesson } from '../../../logic/lessonUtils';
-import { useAuth } from '../../../context/UserContext';
-import useProgress from '../../../hooks/useProgress';
-import { TextBox } from '../../../components/TextBox';
-import { TextContainer } from '../../../components/TextContainer';
-import { makeTextBlock } from '../../../styling/stylingUtils';
+import { buildLesson, previewLesson } from '../../logic/lessonUtils';
+import { useAuth } from '../../context/UserContext';
+import useProgress from '../../hooks/useProgress';
+import { TextBox } from '../TextBox';
+import { TextContainer } from '../TextContainer';
+import { makeTextBlock } from '../../styling/stylingUtils';
 import { useEffect, useState } from 'react';
-import { ColoredChunk } from '../../../types';
-import { useLesson } from '../../../context/LessonContext';
+import { ColoredChunk } from '../../types';
+import { useLesson } from '../../context/LessonContext';
 
 function LessonPanelBefore() {
   const { progress } = useLesson();
@@ -49,7 +49,7 @@ function LessonPanelBefore() {
       <TextContainer width={60} height={12}>
         <div className="flex flex-col items-center justify-center w-full h-full">
           <TextBox
-            width={40}
+            width={60}
             height={12}
             content={content}
           />
