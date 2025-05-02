@@ -6,7 +6,7 @@ import init, {detect_note} from '../../../wasm/audio_processing'
 
 /* default times (seconds) */
 const DEFAULT_TOTAL = 5;
-const DEFAULT_EASY  = 2;
+const DEFAULT_EASY  = 1.5;
 const DEFAULT_GOOD  = 3;
 
 type Props = {
