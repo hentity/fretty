@@ -7,55 +7,51 @@ import { LOCAL_STORAGE_KEY } from '../pages/Auth';
 
 export default function useProgress(user: { uid: string } | null) {
   const [progress, setProgress] = useState<Progress | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
+      setLoading(true); // <-- start loading
+
       if (user) {
-        // User logged in -> try to fetch from Firestore
         const ref = doc(db, 'progress', user.uid);
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
           setProgress(snap.data() as Progress);
         } else {
-          // No progress -> try to migrate guest progress
           const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
           if (localData) {
             try {
               const guestProgress = JSON.parse(localData) as Progress;
-              console.log('Uploading guest progress to Firestore:', guestProgress);
               await setDoc(ref, guestProgress);
               localStorage.removeItem(LOCAL_STORAGE_KEY);
               setProgress(guestProgress);
-            } catch (err) {
-              console.error('Failed to parse guest progress. Falling back to default.', err);
+            } catch {
               const defaultProgress = createDefaultProgress();
               await setDoc(ref, defaultProgress);
               setProgress(defaultProgress);
             }
           } else {
-            // No guest progress -> create default
-            console.log('No guest progress found. Creating default progress.');
             const defaultProgress = createDefaultProgress();
             await setDoc(ref, defaultProgress);
             setProgress(defaultProgress);
           }
         }
       } else {
-        // No user -> try to fetch guest progress from localStorage
         const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (localData) {
           try {
             setProgress(JSON.parse(localData) as Progress);
-          } catch (err) {
-            console.error('Failed to parse guest progress from localStorage.', err);
-            setProgress(createDefaultProgress()); // fallback to fresh blank guest progress
+          } catch {
+            setProgress(createDefaultProgress());
           }
         } else {
-          // No guest progress -> create default
           setProgress(createDefaultProgress());
         }
       }
+
+      setLoading(false); // <-- done loading
     };
 
     fetch();
@@ -65,20 +61,15 @@ export default function useProgress(user: { uid: string } | null) {
     if (!updatedProgress) return;
 
     if (user) {
-      // Save to Firestore
       const ref = doc(db, 'progress', user.uid);
       await setDoc(ref, updatedProgress);
     } else {
-      // Save guest progress to localStorage
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProgress));
-      } catch (err) {
-        console.error('Failed to save guest progress to localStorage.', err);
-      }
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProgress));
     }
 
     setProgress(updatedProgress);
   };
 
-  return { progress, setProgress, saveProgress };
+  return { progress, setProgress, saveProgress, loading };
 }
+

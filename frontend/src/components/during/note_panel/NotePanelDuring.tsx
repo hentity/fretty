@@ -1,4 +1,3 @@
-import { ColoredChunk } from '../../../types';
 import { useLesson } from '../../../context/LessonContext';
 import { LEARNING_GOOD_ATTEMPTS } from '../../../logic/lessonUtils';
 import { TextContainer } from '../../TextContainer';
@@ -61,7 +60,7 @@ function NotePanelDuring() {
   const progressColorClass = result ? resultToColorClass[result] : 'text-fg'; // default if no result yet
 
   const progressMarkers = Array(LEARNING_GOOD_ATTEMPTS).fill(emptySymbol)
-    .map((marker, idx) => idx < currentSpot.good_attempts ? filledSymbol : emptySymbol)
+    .map((_, idx) => idx < currentSpot.good_attempts ? filledSymbol : emptySymbol)
     .join(' ');
 
   const progressContent = makeTextBlock([

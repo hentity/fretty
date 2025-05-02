@@ -1,5 +1,3 @@
-// components/after/After.tsx
-import NotePanelAfter from './NotePanelAfter'
 import LessonPanelAfter from './LessonPanelAfter'
 
 export default function After() {

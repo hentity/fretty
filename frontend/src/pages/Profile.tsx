@@ -1,63 +1,93 @@
+import { useMemo } from 'react';
+import { useLesson } from '../context/LessonContext';
+import { TextBox } from '../components/TextBox';
+import { makeTextBlock } from '../styling/stylingUtils';
+import { ColoredChunk } from '../types';
 
-import { useAuth } from '../context/UserContext';
-import { Navigate } from 'react-router-dom';
-import Terminal from '../components/Terminal';
-import { use, useEffect, useState } from 'react';
+const MASTERED_THRESHOLD = 14;
 
-const Profile = () => {
+const STATIC_MARKERS = [
+  { fret: 3, string: 3 },
+  { fret: 5, string: 3 },
+  { fret: 7, string: 3 },
+  { fret: 9, string: 3 },
+  { fret: 12, string: 2 },
+  { fret: 12, string: 4 },
+] as const;
 
-    interface ContentType {
-        type: string;
-        content: string
+type SpotStatus = 'unpracticed' | 'practicing' | 'mastered';
+
+type SpotKey = `${number}:${number}`;
+
+export default function Profile() {
+  const { progress } = useLesson();
+
+  const spotMap = useMemo(() => {
+    const map: Record<SpotKey, { status: SpotStatus; label: string }> = {};
+    if (!progress) return map;
+
+    for (const spot of progress.spots) {
+      if (spot.status === 'unlearnable') continue;
+      const key = `${spot.string + 1}:${spot.fret}` as SpotKey;
+      const label = spot.note?.[0]?.toUpperCase() ?? ' ';
+      let status: SpotStatus = 'unpracticed';
+      if (spot.interval >= MASTERED_THRESHOLD) status = 'mastered';
+      else if (spot.num_practices > 0) status = 'practicing';
+      map[key] = { status, label };
+    }
+    return map;
+  }, [progress]);
+
+  const tuning = useMemo(
+    () => (progress?.tuning ?? ['E', 'B', 'G', 'D', 'A', 'E']).map(s => s[0].toUpperCase()),
+    [progress]
+  );
+
+  const rowChunks = (label: string, stringNo: number): ColoredChunk[] => {
+    const chunks: ColoredChunk[] = [
+      { text: ` ${label} `, className: 'text-fg' },
+      { text: `║`, className: 'text-fg' },
+    ];
+
+    for (let fret = 1; fret <= 12; fret++) {
+      const key = `${stringNo}:${fret}` as SpotKey;
+      const entry = spotMap[key];
+
+      const isMark = STATIC_MARKERS.some(m => m.string === stringNo && m.fret === fret);
+      const char = entry ? entry.label.padEnd(2, ' ') : (isMark ? '● ' : '  ');
+      let className = 'text-fg';
+
+      if (entry?.status === 'practicing') className = 'bg-practiced text-bg';
+      if (entry?.status === 'mastered') className = 'bg-mastered text-bg';
+
+      chunks.push({ text: ` ${char}`, className });
+      chunks.push({ text: '|', className: 'text-fg' });
     }
 
-    const { user } = useAuth();
-    const [content, setContent] = useState<ContentType[]>([{type:'query', content: 'What would you like to know about your profile?'}]);
+    chunks.push({ text: '\n' });
+    return chunks;
+  };
 
+  const legendContent: ColoredChunk[] = makeTextBlock([
+    { text: '     ', className: 'text-fg' },
+    { text: '   ', className: 'bg-practiced text-bg' },
+    { text: ' Learning   ', className: 'text-fg' },
+    { text: '   ', className: 'bg-mastered text-bg' },
+    { text: ' Mastered', className: 'text-fg' },
+  ]);
 
-    // Manages state of conversation with the terminal
-    useEffect(() => {
-        // Add command line terminal commands here
-        if (content[content.length - 1].type === 'input'){
-            if (content[content.length - 1].content === 'clr'){
-                setContent([{type:'query', content: 'What would you like to know about your profile?'}]);
-            } else if (content[content.length - 1].content === 'help'){
-                setContent((prev) => [...prev, {type:'query', content: 'Available commands: clr, help'}]);
-            } else if (content[content.length - 1].content === 'exit'){ 
-                setContent((prev) => [...prev, {type:'query', content: 'You cannot escape this terminal!'}]);
-            } else{
-                setContent((prev) => [...prev, {type:'query', content: 'I didnt quite understand that. Type "help" for a list of commands.'}]);
-            }
-        }
-        
-    },[content])
-
-    if (!user) {
-        return <Navigate to="/auth" />; // Redirect to auth page if not logged in
+  const fretboardContent = useMemo(() => {
+    const rows: ColoredChunk[] = [];
+    for (let i = 0; i < 6; i++) {
+      rows.push(...rowChunks(tuning[i] ?? 'E', i + 1));
     }
+    return makeTextBlock(rows);
+  }, [spotMap, tuning]);
 
-    // Function to send input to terminal to render 
-    const handleEnter = (input: string) => {
-        // Process the input and update the response state
-        setContent((prev) => [...prev, {type:'input', content: input}]);
-    };
-
-    return (
-        <div className="p-6">          
-            {/* Terminal Componeent below  */}
-            <Terminal 
-                onEnter={handleEnter}
-                height="h-120">
-                <div className="">
-                    {content.map((line, index) => (
-                        line.type === "query" 
-                            ? <div key={index} className="mb-2">{line.content}</div>
-                            : <div key={index} className="text-green-700 mb-2">{line.content}</div>
-                    ))}
-                </div>
-            </Terminal>
-        </div>
-    )
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full p-6 gap-4">
+      <TextBox width={52} height={1} content={legendContent} />
+      <TextBox width={52} height={6} content={fretboardContent} />
+    </div>
+  );
 }
-
-export default Profile

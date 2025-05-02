@@ -10,10 +10,12 @@ type TextContainerProps = {
 export const TextContainer: React.FC<TextContainerProps> = ({ width, height, children }) => {
   return (
     <div
-      className="relative justify-center items-center font-mono-ui text-xl whitespace-pre select-none"
+      className="relative flex justify-center items-center font-mono text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre select-none"
       style={{
-        width: `${width}ch`,
+        width: '100%',
+        maxWidth: `${width}ch`,
         height: `calc(${height} * 1lh)`,
+        margin: '0 auto', // horizontal centering fallback
       }}
     >
       {children}

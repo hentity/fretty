@@ -20,7 +20,7 @@ import useProgress from '../hooks/useProgress';
 
 export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-  const { progress: initialProgress, saveProgress } = useProgress(user);
+  const { progress: initialProgress, loading, saveProgress } = useProgress(user);
 
   /* ------------------------------------------------------------------ */
   /*  core lesson state                                                 */
@@ -58,11 +58,11 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /*  setup progress once loaded                                        */
   /* ------------------------------------------------------------------ */
   useEffect(() => {
-    if (initialProgress && !progress) {
+    if (initialProgress) {
       setProgress(initialProgress);
     }
   }, [initialProgress]);
-
+  
   /* ------------------------------------------------------------------ */
   /*  start a new lesson                                                */
   /* ------------------------------------------------------------------ */
@@ -85,7 +85,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setCompleted([]);
     setCurrentSpot(first);
     setLessonStatus('during');
-    saveProgress(progress);
+    setProgress(progress);
+    // saveProgress(progress);
 
     if (progress.spots.every((s) => s.all_attempts === 0)) {
       setIsFirstLesson(true);
@@ -177,7 +178,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     };
     setCurrentSpot(updatedSpot);
     setProgress(newProgress);
-    saveProgress(newProgress);
+    // saveProgress(newProgress);
   
     // flash on fretboard
     const colourMap = {
@@ -194,7 +195,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     );
   
     // handle queue
-    let nextQueue = [...lessonQueue];
+    const nextQueue = [...lessonQueue];
     if (updatedSpot.status === 'review') {
       const days = Math.max(1, Math.round(updatedSpot.interval));
       scheduleReview(newProgress, updatedSpot, days, today);
@@ -236,6 +237,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     isFirstLesson,
     tutorialStep,
     setTutorialStep,
+    today,
+    loading,
   };
 
   return (

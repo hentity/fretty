@@ -37,7 +37,7 @@ export const scheduleReview = (
   // remove any previous schedule first
   removeReview(progress, spot)
 
-  let target = new Date(startDateISO)
+  const target = new Date(startDateISO)
   target.setDate(target.getDate() + days)
 
   // bump forward until capacity for that day
@@ -54,9 +54,6 @@ export const scheduleReview = (
   }
 
   console.log(progress)
-}
-function getSpotsByStatus(spots: Spot[], status: string): Spot[] {
-  return spots.filter((spot) => spot.status === status)
 }
 
 export const buildLesson = (

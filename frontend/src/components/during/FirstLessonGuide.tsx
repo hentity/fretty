@@ -1,13 +1,12 @@
 import { useLesson } from '../../context/LessonContext';
 import { TextBox } from '../../components/TextBox';
-import { makeTextBlock } from '../../styling/stylingUtils';
 
 export default function FirstLessonGuide() {
   const { currentSpot, tutorialStep } = useLesson();
 
   if (!currentSpot) return null;
 
-  const { string, fret, note } = currentSpot;
+  const { string, note } = currentSpot;
 
   const tutorialMessages = [
     [
@@ -40,7 +39,7 @@ export default function FirstLessonGuide() {
       width={65}
       height={2}
       content={content}
-      className={'bg-stone-800 outline-4 outline-stone-800'}
+      className={'bg-stone-700 outline-4 outline-stone-700'}
     />
   );
 }

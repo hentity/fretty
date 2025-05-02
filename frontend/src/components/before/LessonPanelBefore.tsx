@@ -1,6 +1,4 @@
-import { buildLesson, previewLesson } from '../../logic/lessonUtils';
-import { useAuth } from '../../context/UserContext';
-import useProgress from '../../hooks/useProgress';
+import { previewLesson } from '../../logic/lessonUtils';
 import { TextBox } from '../TextBox';
 import { TextContainer } from '../TextContainer';
 import { makeTextBlock } from '../../styling/stylingUtils';

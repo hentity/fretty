@@ -13,15 +13,15 @@
     --color-accentLight: #a3b18a;
     --color-accentDark: #588157;
 
-    --color-borderDebug: #000000;
+    --color-borderDebug: #1c1917;
 
     --color-fg: #fefae0;
-    --color-bg: #000000;
+    --color-bg: #1c1917;
 
     --color-easy: #5498ab;
     --color-good: #6a994e;
     --color-hard: #e0953e;
-    --color-fail: #9e2a2b;
+    --color-fail: #b93133;
 
     --color-noteProgress: #00ff00;
     --color-practiced: #6a994e;

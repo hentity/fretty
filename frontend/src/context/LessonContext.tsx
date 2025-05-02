@@ -24,6 +24,8 @@ export type LessonContextType = {
   isFirstLesson: boolean | null;
   tutorialStep: number;
   setTutorialStep: React.Dispatch<React.SetStateAction<number>>;
+  today: string;
+  loading: boolean;
 };
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)

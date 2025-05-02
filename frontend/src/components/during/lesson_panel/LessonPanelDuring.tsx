@@ -1,4 +1,3 @@
-import LessonProgress from '../LessonProgress';
 import Fretboard from './Fretboard';
 import { TextContainer } from '../../TextContainer';
 import TimerBar from './TimerBar';

@@ -5,19 +5,25 @@ import { makeTextBlock } from '../../styling/stylingUtils';
 import { useEffect, useState } from 'react';
 import { ColoredChunk } from '../../types';
 import { spotKey } from '../../logic/lessonUtils';
+import { MASTERED_THRESHOLD } from '../Nav';
+import { useAuth } from '../../context/UserContext';
 
-const MASTERED_THRESHOLD = 14;
 const BAR_WIDTH = 20;
 
 function LessonPanelAfter() {
   const { completedSpots, progress } = useLesson();
+  const { user } = useAuth()
   const [noteChunks, setNoteChunks] = useState<ColoredChunk[]>([]);
   const [masteryChunks, setMasteryChunks] = useState<ColoredChunk[]>([]);
   const [reviewChunks, setReviewChunks] = useState<ColoredChunk[]>([]);
 
   const title: ColoredChunk[] = [
-    { text: 'See you tomorrow!', className: 'text-fg font-bold' },
+    { text: 'See you tomorrow :)', className: 'text-fg font-bold' },
   ];
+
+  if (!user) {
+    title.push({text: '\nTip: Sign in to save your progress across devices.', className: 'text-fg brightness-80'})
+  }
 
   useEffect(() => {
     if (!progress || completedSpots.length === 0) {
@@ -29,13 +35,13 @@ function LessonPanelAfter() {
     }
 
     const noteLines: ColoredChunk[] = [
-      { text: 'Note\n', className: 'text-fg underline pb-1', noPadding: true},
+      { text: 'note\n', className: 'text-fg font-bold pb-1', noPadding: true},
     ];
     const masteryLines: ColoredChunk[] = [
-      { text: 'Mastery\n', className: 'text-fg underline pb-1', noPadding: true },
+      { text: 'mastery\n', className: 'text-fg font-bold pb-1', noPadding: true },
     ];
     const reviewLines: ColoredChunk[] = [
-      { text: 'Next Review\n', className: 'text-fg underline pb-1', noPadding: true },
+      { text: 'next review\n', className: 'text-fg font-bold pb-1', noPadding: true },
     ];
 
     completedSpots.forEach((spot) => {
@@ -76,7 +82,6 @@ function LessonPanelAfter() {
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-full overflow-y-auto">
-      <TextBox width={90} height={1} content={title} />
       <TextContainer width={90} height={height+1}>
         <div className="flex flex-row items-center justify-center w-full h-full">
           <TextBox width={28} height={height} content={noteChunks} />
@@ -84,6 +89,7 @@ function LessonPanelAfter() {
           <TextBox width={28} height={height} content={reviewChunks} />
         </div>
       </TextContainer>
+      <TextBox width={90} height={2} content={title} />
     </div>
   );
 }
