@@ -7,13 +7,6 @@ import { UserContext } from '../context/UserContext'
 import { useLesson, LessonStatus } from '../context/LessonContext'
 import  { Spot } from '../types'
 
-import NotePanelBefore from '../components/before/NotePanelBefore'
-import NotePanelDuring from '../components/during/note_panel/NotePanelDuring'
-import NotePanelAfter from '../components/after/NotePanelAfter'
-
-import LessonPanelBefore from '../components/before/LessonPanelBefore'
-import LessonPanelDuring from '../components/during/lesson_panel/LessonPanelDuring'
-import LessonPanelAfter from '../components/after/LessonPanelAfter'
 import Before from '../components/before/Before'
 import During from '../components/during/During'
 import After from '../components/after/After'
