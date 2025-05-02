@@ -3,30 +3,18 @@ import { TextBox } from '../TextBox';
 import { TextContainer } from '../TextContainer';
 import { makeTextBlock } from '../../styling/stylingUtils';
 
-async function requestMicAccess(): Promise<boolean> {
-  try {
-    const permission = await navigator.permissions?.query({ name: 'microphone' as PermissionName });
-    if (permission?.state === 'denied') {
-      alert('Microphone access has been denied. Please enable it in browser settings.');
-      return false;
-    }
-
-    await navigator.mediaDevices.getUserMedia({ audio: true });
-    return true;
-  } catch (err) {
-    console.error('Failed to get mic permission:', err);
-    return false;
-  }
-}
-
 function NotePanelBefore() {
   const { startLesson } = useLesson();
 
-  const handleStart = async () => {
-    const granted = await requestMicAccess();
-    if (granted) {
-      startLesson(); 
-    }
+  const handleStart = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(() => {
+        startLesson(); // only called after mic access granted
+      })
+      .catch((err) => {
+        console.error('Mic access denied or failed:', err);
+        alert('Microphone access is required to begin. Please check browser permissions.');
+      });
   };
 
   const buttonContent = makeTextBlock([

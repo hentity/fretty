@@ -123,7 +123,7 @@ function Nav() {
       { text: 'learning   ', className: 'text-fg bg-bg' },
       { text: `${mastered} `, className: 'text-mastered bg-bg font-bold' },
       { text: 'mastered   ', className: 'text-fg bg-bg' },
-      { text: `${unpracticed} `, className: 'text-fg brightness-60 bg-bg font-bold' },
+      { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
       { text: 'unpracticed', className: 'text-fg bg-bg' },
       { text: ' }', className: 'text-fg bg-bg font-bold' },
     ]));
