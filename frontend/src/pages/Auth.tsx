@@ -34,10 +34,12 @@ async function createProgressIfMissing(uid: string) {
 }
 
 export default function Auth() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [content, setContent] = useState<ColoredChunk[]>([]);
 
   useEffect(() => {
+    if (loading) return;
+
     if (user) {
       setContent([
         { text: 'You are already signed in. Redirecting...\n', className: 'text-fg' },
