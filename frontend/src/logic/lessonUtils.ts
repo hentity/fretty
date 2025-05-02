@@ -60,33 +60,40 @@ export const buildLesson = (
   progress: Progress,
   today = todayISO()
 ): Spot[] => {
-  const lesson: Spot[] = []
+  const lesson: Spot[] = [];
 
   const addSpots = (spots: Spot[]) => {
-    const remaining = MAX_DAILY_NOTES - lesson.length
-    if (remaining > 0) lesson.push(...spots.slice(0, remaining))
-  }
+    const remaining = MAX_DAILY_NOTES - lesson.length;
+    if (remaining > 0) lesson.push(...spots.slice(0, remaining));
+  };
 
   // add spots due for review
-  const keysToday = progress.review_date_to_spots[today] ?? []
-  const dueReviews = getSpotsByKeys(progress.spots, keysToday)
-  addSpots(dueReviews)
+  const keysToday = progress.review_date_to_spots[today] ?? [];
+  const dueReviews = getSpotsByKeys(progress.spots, keysToday);
+  addSpots(dueReviews);
 
   // add other unlearned/unseen spots
-  const learning = progress.spots.filter((s) => s.status === 'learning')
-  addSpots(learning)
+  const learning = progress.spots.filter((s) => s.status === 'learning');
+  addSpots(learning);
 
-  const unseen = progress.spots.filter((s) => s.status === 'unseen')
-  addSpots(unseen)
+  const unseen = progress.spots.filter((s) => s.status === 'unseen');
+  addSpots(unseen);
 
+  // set status and attempt counts
   lesson.forEach((s) => {
-    s.status = 'learning'
-    s.good_attempts = 0
-    s.all_attempts = 0
-  })
+    s.status = 'learning';
+    s.good_attempts = 0;
+    s.all_attempts = 0;
+  });
 
-  return lesson
-}
+  // shuffle lesson
+  for (let i = lesson.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lesson[i], lesson[j]] = [lesson[j], lesson[i]];
+  }
+
+  return lesson;
+};
 
 export const previewLesson = (
   progress: Progress,

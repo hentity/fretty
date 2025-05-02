@@ -170,7 +170,10 @@ export default function TimerBar({
       /* microphone */
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const source = audioCtx.createMediaStreamSource(stream);
+      const gainNode = audioCtx.createGain();
       source.connect(worklet);
+      gainNode.gain.value = 0;
+      worklet.connect(gainNode).connect(audioCtx.destination);
       worklet.connect(audioCtx.destination); // muted downstream
 
       /* buffer size */

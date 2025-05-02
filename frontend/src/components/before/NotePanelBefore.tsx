@@ -3,13 +3,36 @@ import { TextBox } from '../TextBox';
 import { TextContainer } from '../TextContainer';
 import { makeTextBlock } from '../../styling/stylingUtils';
 
+async function requestMicAccess(): Promise<boolean> {
+  try {
+    const permission = await navigator.permissions?.query({ name: 'microphone' as PermissionName });
+    if (permission?.state === 'denied') {
+      alert('Microphone access has been denied. Please enable it in browser settings.');
+      return false;
+    }
+
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    return true;
+  } catch (err) {
+    console.error('Failed to get mic permission:', err);
+    return false;
+  }
+}
+
 function NotePanelBefore() {
   const { startLesson } = useLesson();
 
+  const handleStart = async () => {
+    const granted = await requestMicAccess();
+    if (granted) {
+      startLesson(); 
+    }
+  };
+
   const buttonContent = makeTextBlock([
-    { text: '⌜             ⌝\n', onClick: startLesson, className: 'group-active:text-easy group-hover:text-easy transition' },
-    { text: '    begin    \n', onClick: startLesson, className: '' },
-    { text: '⌞             ⌟\n', onClick: startLesson, className: 'group-active:text-easy group-hover:text-easy transition' },
+    { text: '⌜             ⌝\n', onClick: handleStart, className: 'group-active:text-easy group-hover:text-easy transition' },
+    { text: '    begin    \n', onClick: handleStart, className: '' },
+    { text: '⌞             ⌟\n', onClick: handleStart, className: 'group-active:text-easy group-hover:text-easy transition' },
   ]);
 
   return (
