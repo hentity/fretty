@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLesson } from '../../../context/LessonContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
-import init, { detect_note } from '../../../wasm/audio_processing';
+import init, {detect_note} from '../../../wasm/audio_processing'
 
 /* default times (seconds) */
 const DEFAULT_TOTAL = 5;

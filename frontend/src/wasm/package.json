@@ -1,0 +1,15 @@
+{
+  "name": "audio_processing",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "audio_processing_bg.wasm",
+    "audio_processing.js",
+    "audio_processing.d.ts"
+  ],
+  "main": "audio_processing.js",
+  "types": "audio_processing.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

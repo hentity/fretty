@@ -2,14 +2,6 @@
 /wasm/**/target/
 /wasm/**/Cargo.lock
 
-# WASM build output copied into frontend
-/frontend/src/wasm/*_bg.wasm
-/frontend/src/wasm/*_bg.js
-/frontend/src/wasm/.gitignore
-/frontend/src/wasm/package.json
-/frontend/src/wasm/README.md
-/frontend/src/wasm/*.d.ts
-
 # If using wasm-pack's default output dir
 /pkg/
 
