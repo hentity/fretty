@@ -10,7 +10,7 @@ type TextContainerProps = {
 export const TextContainer: React.FC<TextContainerProps> = ({ width, height, children }) => {
   return (
     <div
-      className="relative justify-center items-center font-mono text-base text-xl whitespace-pre select-none"
+      className="relative justify-center items-center font-mono-ui text-xl whitespace-pre select-none"
       style={{
         width: `${width}ch`,
         height: `calc(${height} * 1lh)`,
