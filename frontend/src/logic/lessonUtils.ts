@@ -6,7 +6,7 @@ export const RANDOM_POP_LEN    = 2
 export const todayISO = (offsetDays = 0): string => {
   const date = new Date()
   date.setDate(date.getDate() + offsetDays)
-  return date.toISOString().slice(0, 10)
+  return date.toLocaleDateString('sv-SE')
 }
 
 export const spotKey = (s: Spot): string => `${s.string}-${s.fret}`
