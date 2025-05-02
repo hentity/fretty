@@ -1,9 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap');
 @import "tailwindcss";
-
-.mono-ui {
-  font-family: 'Fira Mono', monospace;
-}
 
 @theme {
     --color-primaryLight: #e5e5e5;

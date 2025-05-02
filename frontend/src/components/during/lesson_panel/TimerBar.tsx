@@ -109,7 +109,7 @@ export default function TimerBar({
     else color = 'text-hard';
 
     segments.push({
-      text: i < filled ? '▰' : '▱',
+      text: i < filled ? ' ' : '=',
       className: failing
         ? 'text-fail'
         : color,

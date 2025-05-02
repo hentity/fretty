@@ -61,7 +61,7 @@ function Home() {
 
   if (loading) return <p>Loading user...</p>
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center overflow-hidden">
+    <div className="flex flex-col flex-grow items-center justify-center overflow-hidden">
       <div className="flex border border-borderDebug">
         {lessonStatus === 'before' && <Before />}
         {lessonStatus === 'during' && <During />}
