@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLesson } from '../context/LessonContext';
 import { TextBox } from '../components/TextBox';
-import { interpolateColor, makeTextBlock } from '../styling/stylingUtils';
+import { makeTextBlock } from '../styling/stylingUtils';
 import { ColoredChunk } from '../types';
 
 const MASTERED_THRESHOLD = 14;
