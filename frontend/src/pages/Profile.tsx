@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLesson } from '../context/LessonContext';
 import { TextBox } from '../components/TextBox';
-import { makeTextBlock } from '../styling/stylingUtils';
+import { interpolateColor, makeTextBlock } from '../styling/stylingUtils';
 import { ColoredChunk } from '../types';
 
 const MASTERED_THRESHOLD = 14;
@@ -57,8 +57,9 @@ export default function Profile() {
       const char = entry ? entry.label.padEnd(2, ' ') : (isMark ? '● ' : '  ');
       let className = 'text-fg';
 
-      if (entry?.status === 'practicing') className = 'bg-practiced text-bg';
+      if (entry?.status === 'practicing') className = `bg-practiced text-bg`;
       if (entry?.status === 'mastered') className = 'bg-mastered text-bg';
+      if (entry?.status === 'unpracticed') className = 'bg-stone-500 text-bg brightness-80';
 
       chunks.push({ text: ` ${char}`, className });
       chunks.push({ text: '|', className: 'text-fg' });
@@ -71,14 +72,16 @@ export default function Profile() {
   const legendContent: ColoredChunk[] = makeTextBlock([
     { text: '     ', className: 'text-fg' },
     { text: '   ', className: 'bg-practiced text-bg' },
-    { text: ' Learning   ', className: 'text-fg' },
+    { text: ' learning   ', className: 'text-fg' },
     { text: '   ', className: 'bg-mastered text-bg' },
-    { text: ' Mastered', className: 'text-fg' },
+    { text: ' mastered   ', className: 'text-fg' },
+    { text: '   ', className: 'bg-stone-500 text-bg brightness-80' },
+    { text: ' unpracticed', className: 'text-fg' },
   ]);
 
   const fretboardContent = useMemo(() => {
     const rows: ColoredChunk[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 5; i >= 0; i--) {
       rows.push(...rowChunks(tuning[i] ?? 'E', i + 1));
     }
     return makeTextBlock(rows);

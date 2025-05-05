@@ -1,8 +1,13 @@
+/* timer bar ------------------------------------------------------------------
+   waits for the right note (or j-k-l combo) **after** time-out before advancing
+   – the bar turns red and stays red until `advance('fail')` is called
+-------------------------------------------------------------------------------*/
+
 import { useEffect, useRef, useState } from 'react';
 import { useLesson } from '../../../context/LessonContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
-import init, {detect_note} from '../../../wasm/audio_processing'
+import init, { detect_note } from '../../../wasm/audio_processing';
 
 /* default times (seconds) */
 const DEFAULT_TOTAL = 5;
@@ -26,6 +31,7 @@ export default function TimerBar({
   const {
     lessonStep,
     advance,
+    showFail,
     lessonStatus,
     isPausing,
     isFirstLesson,
@@ -38,9 +44,10 @@ export default function TimerBar({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   /* ui state */
-  const [running,  setRunning]  = useState(false);
-  const [failing,  setFailing]  = useState(false);
+  const [running,  setRunning]  = useState(false);   // bar growing
+  const [failing,  setFailing]  = useState(false);   // bar finished, waiting
   const [noteTxt,  setNoteTxt]  = useState<string | null>(null);
+  const [advancing, setAdvancing] = useState(false);
 
   /* audio handles */
   const audioCtxRef  = useRef<AudioContext | null>(null);
@@ -65,75 +72,72 @@ export default function TimerBar({
 
   /* ---------- start / stop timer ---------- */
   useEffect(() => {
-    const initial = isFirstLesson && lessonStep === 0;
+    const initial   = isFirstLesson && lessonStep === 0;
     const shouldRun = lessonStatus === 'during' && !initial;
 
     if (shouldRun) {
       setElapsed(0);
+      setAdvancing(false)
       setRunning(true);
       setFailing(false);
       setNoteTxt(null);
       bufferRef.current = new Float32Array();
     } else {
       setRunning(false);
+      setFailing(false);
     }
   }, [lessonStep, lessonStatus, isFirstLesson]);
 
-  /* ---------- handle fail on timeout ---------- */
+  /* ---------- stop growth and flag failure on timeout ---------- */
   useEffect(() => {
     if (!running || isPausing) return;
     if (elapsed >= totalTime) {
-      setRunning(false);
-      setFailing(true);
-      advance('fail');
+      setRunning(false);   // stop bar growth
+      setFailing(true);    // paint bar red; wait for note / shortcut
+      showFail();
     }
-  }, [elapsed, running, totalTime, isPausing, advance]);
+  }, [elapsed, running, totalTime, isPausing, showFail]);
 
-  /* ---------- keyboard shortcut ---------- */
+  /* ---------- keyboard shortcut (j + k + l) ---------- */
   useEffect(() => {
     const pressedKeys = new Set<string>();
-  
+
     const onKeyDown = (e: KeyboardEvent) => {
       pressedKeys.add(e.code);
-  
       const keys = ['KeyJ', 'KeyK', 'KeyL'];
-      const allPressed = keys.every((key) => pressedKeys.has(key));
-  
-      if (allPressed && !isPausing) {
-        const initial = isFirstLesson && lessonStep === 0;
-        setRunning(false);
-  
-        if (initial) {
-          advance(null);
-          return;
-        }
-  
-        const filled = Math.min(width, Math.round((elapsed / totalTime) * width));
-        const secAt  = ((filled - 1) / width) * totalTime;
-  
-        let res: 'easy' | 'good' | 'hard';
-        if (secAt <= easyTime) res = 'easy';
-        else if (secAt <= goodTime) res = 'good';
-        else res = 'hard';
-  
-        advance(res);
-      }
+      const allPressed = keys.every(code => pressedKeys.has(code));
+      if (!allPressed || isPausing) return;
+
+      const initial = isFirstLesson && lessonStep === 0;
+      setRunning(false);   // always stop bar
+
+      /* choose result */
+      const result: 'easy' | 'good' | 'hard' | 'fail' =
+        failing || elapsed >= totalTime
+          ? 'fail'
+          : ((): 'easy' | 'good' | 'hard' => {
+              const filled = Math.min(width, Math.round((elapsed / totalTime) * width));
+              const secAt  = ((filled - 1) / width) * totalTime;
+              if (secAt <= easyTime) return 'easy';
+              if (secAt <= goodTime) return 'good';
+              return 'hard';
+            })();
+
+      advance(initial ? null : result);
+      setAdvancing(true);
     };
-  
-    const onKeyUp = (e: KeyboardEvent) => {
-      pressedKeys.delete(e.code);
-    };
-  
+
+    const onKeyUp = (e: KeyboardEvent) => pressedKeys.delete(e.code);
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
-  
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
   }, [
+    failing,
     isPausing,
-    running,
     elapsed,
     width,
     totalTime,
@@ -160,21 +164,17 @@ export default function TimerBar({
       if (audioCtx.state === 'suspended') await audioCtx.resume();
 
       /* worklet */
-      const url = new URL(
-        '../../../components/worklet-processor.js',
-        import.meta.url,
-      ).href;
+      const url = new URL('../../../components/worklet-processor.js', import.meta.url).href;
       await audioCtx.audioWorklet.addModule(url);
       const worklet = new AudioWorkletNode(audioCtx, 'buffer-processor');
 
       /* microphone */
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const source = audioCtx.createMediaStreamSource(stream);
-      const gainNode = audioCtx.createGain();
+      const stream  = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const source  = audioCtx.createMediaStreamSource(stream);
+      const gain    = audioCtx.createGain();
       source.connect(worklet);
-      gainNode.gain.value = 0;
-      worklet.connect(gainNode).connect(audioCtx.destination);
-      worklet.connect(audioCtx.destination); // muted downstream
+      gain.gain.value = 0;
+      worklet.connect(gain).connect(audioCtx.destination); // muted path
 
       /* buffer size */
       const chunkSec  = 0.5;
@@ -182,7 +182,7 @@ export default function TimerBar({
 
       /* onmessage */
       worklet.port.onmessage = ({ data }) => {
-        if (stopped || lessonStatus !== 'during') return;
+        if (stopped) return;
 
         const inBuf      = data as Float32Array;
         const combined   = new Float32Array(bufferRef.current.length + inBuf.length);
@@ -195,7 +195,6 @@ export default function TimerBar({
           bufferRef.current = bufferRef.current.slice(chunkSize);
 
           const note = detect_note(chunk, audioCtx.sampleRate);
-          console.log(note)
           setNoteTxt(note ?? '—');
         }
       };
@@ -211,7 +210,7 @@ export default function TimerBar({
       stopped = true;
       clearInterval(intervalRef.current!);
 
-      workletRef.current?.port?.close();
+      workletRef.current?.port.close();
       workletRef.current?.disconnect();
       streamRef.current?.getTracks().forEach(t => t.stop());
       audioCtxRef.current?.close();
@@ -222,42 +221,36 @@ export default function TimerBar({
       bufferRef.current   = new Float32Array();
       setNoteTxt(null);
       setRunning(false);
+      setFailing(false);
     };
   }, [lessonStatus, isFirstLesson, lessonStep]);
 
-  /* ---------- auto-advance when note matches ---------- */
+  /* ---------- auto-advance when correct note is heard ---------- */
   useEffect(() => {
-    if (
-      !(running || (isFirstLesson && lessonStep === 0)) ||
-      isPausing ||
-      !currentSpot ||
-      !noteTxt ||
-      lessonStatus !== 'during'
-    )
+    /* only proceed when listening and we have a note string */
+    const listening = running || failing || (isFirstLesson && lessonStep === 0);
+    if (!listening || isPausing || !currentSpot || !noteTxt || lessonStatus !== 'during')
       return;
 
     if (noteTxt.startsWith(currentSpot.note)) {
-      setRunning(false);
-
       const initial = isFirstLesson && lessonStep === 0;
-      if (initial) {
-        advance(null);
-        return;
-      }
+      const result: 'easy' | 'good' | 'hard' | 'fail' =
+        failing ? 'fail' : ((): 'easy' | 'good' | 'hard' => {
+          const filled = Math.min(width, Math.round((elapsed / totalTime) * width));
+          const secAt  = ((filled - 1) / width) * totalTime;
+          if (secAt <= easyTime) return 'easy';
+          if (secAt <= goodTime) return 'good';
+          return 'hard';
+        })();
 
-      const filled = Math.min(width, Math.round((elapsed / totalTime) * width));
-      const secAt  = ((filled - 1) / width) * totalTime;
-
-      let res: 'easy' | 'good' | 'hard';
-      if (secAt <= easyTime) res = 'easy';
-      else if (secAt <= goodTime) res = 'good';
-      else res = 'hard';
-
-      advance(res);
+      setRunning(false);
+      advance(initial ? null : result);
+      setAdvancing(true);
     }
   }, [
     noteTxt,
     running,
+    failing,
     isPausing,
     currentSpot,
     isFirstLesson,
@@ -272,22 +265,28 @@ export default function TimerBar({
   ]);
 
   /* ---------- render progress bar ---------- */
-  const filled = Math.min(width, Math.round((elapsed / totalTime) * width));
+  let filled = Math.min(width, Math.round((elapsed / totalTime) * width));
   const segments = Array.from({ length: width }).map((_, i) => {
     const secAt = (i / width) * totalTime;
     let color   = 'text-hard';
     if (secAt <= easyTime) color = 'text-easy';
     else if (secAt <= goodTime) color = 'text-good';
-    if (failing) color = 'text-fail';
-
-    return { text: i < filled ? ' ' : '=', className: color };
+    if (failing) {
+      color = 'text-fail';
+      filled = 0;
+    }
+    return { text: i < filled - 1 ? ' ' : '=', className: color };
   });
 
-  segments.push(
-    running || isFirstLesson
-      ? { text: '\nlistening...', className: 'text-fg' }
-      : { text: '\n' , className: 'text-fg'},
-  );
+  if (advancing && failing) {
+    segments.push({text: '\nNext time :)', className: 'text-fg'})
+  } else {
+    segments.push(
+      running || failing || isFirstLesson
+        ? { text: '\nlistening...', className: 'text-fg' }
+        : { text: '\n', className: 'text-fg' },
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-2">

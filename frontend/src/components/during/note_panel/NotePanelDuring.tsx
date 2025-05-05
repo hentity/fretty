@@ -42,7 +42,7 @@ function NotePanelDuring() {
   const noteArtRaw = asciiArtMap[currentSpot.note as keyof typeof asciiArtMap] || currentSpot.note;
 
   const noteArtContent = makeTextBlock([
-    { text: noteArtRaw.trim(), className: 'text-fg font-bold', noPadding: true}
+    { text: noteArtRaw, className: 'text-fg font-bold', noPadding: true}
   ]);
 
   // Progress indicators

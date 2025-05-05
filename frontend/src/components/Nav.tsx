@@ -3,7 +3,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useAuth } from '../context/UserContext';
 import { TextBox } from '../components/TextBox';
-import { makeTextBlock } from '../styling/stylingUtils';
+import { interpolateColor, makeTextBlock } from '../styling/stylingUtils';
 import { useEffect, useState } from 'react';
 import { ColoredChunk } from '../types';
 import { useLesson } from '../context/LessonContext';
@@ -21,26 +21,7 @@ async function logoutAndRedirect(navigate: ReturnType<typeof useNavigate>) {
   }
 }
 
-function interpolateColor(progress: number): string {
-  const red = [224, 149, 62];
-  const yellow = [106, 153, 78];
-  const green = [84, 152, 171];
 
-  let from: number[], to: number[], t: number;
-
-  if (progress < 0.5) {
-    from = red;
-    to = yellow;
-    t = progress / 0.5;
-  } else {
-    from = yellow;
-    to = green;
-    t = (progress - 0.5) / 0.5;
-  }
-
-  const rgb = from.map((start, i) => Math.round(start + t * (to[i] - start)));
-  return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
-}
 
 function Nav() {
   const navigate = useNavigate();
@@ -53,6 +34,7 @@ function Nav() {
     currentSpot,
     progress,
     loading,
+    today,
   } = useLesson();
 
   const [leftContent, setLeftContent] = useState<ColoredChunk[]>([]);
@@ -84,26 +66,30 @@ function Nav() {
     // ----------------------------
     // Calculate progress stats
     // ----------------------------
-    const rawSpots = [
-      ...completedSpots,
-      ...(lessonQueue || []),
-      ...(currentSpot ? [currentSpot] : [])
-    ];
-
-    const spotMap = new Map<string, typeof rawSpots[number]>();
-    for (const spot of rawSpots) {
-      spotMap.set(spotKey(spot), spot);
+    if (progress.last_review_date == today) {
+      setProgressFraction(1)
+    } else {
+      const rawSpots = [
+        ...completedSpots,
+        ...(lessonQueue || []),
+        ...(currentSpot ? [currentSpot] : [])
+      ];
+  
+      const spotMap = new Map<string, typeof rawSpots[number]>();
+      for (const spot of rawSpots) {
+        spotMap.set(spotKey(spot), spot);
+      }
+  
+      const allSpots = Array.from(spotMap.values());
+      const totalSpots = allSpots.length;
+      const totalGoodAttempts = allSpots.reduce(
+        (sum, spot) => sum + (spot.good_attempts || 0),
+        0
+      );
+      const maxGoodAttempts = totalSpots * LEARNING_GOOD_ATTEMPTS;
+      const fraction = maxGoodAttempts > 0 ? totalGoodAttempts / maxGoodAttempts : 0;
+      setProgressFraction(Math.min(fraction, 1));
     }
-
-    const allSpots = Array.from(spotMap.values());
-    const totalSpots = allSpots.length;
-    const totalGoodAttempts = allSpots.reduce(
-      (sum, spot) => sum + (spot.good_attempts || 0),
-      0
-    );
-    const maxGoodAttempts = totalSpots * LEARNING_GOOD_ATTEMPTS;
-    const fraction = maxGoodAttempts > 0 ? totalGoodAttempts / maxGoodAttempts : 0;
-    setProgressFraction(Math.min(fraction, 1));
 
     // ----------------------------
     // Middle content (progress bar stats)
@@ -149,24 +135,23 @@ function Nav() {
   if (loading) return null;
 
   return (
-    <div className="relative w-screen overflow-x-hidden select-none">
+    <div className="relative w-screen overflow-x-hidden select-none py-2 md:py-6">
       {/* Background progress bar */}
       {!loading && (
         <div
-          className="absolute bottom-0 left-0 h-1 transition-all duration-300"
+          className="absolute bottom-0 left-0 h-1 transition-all duration-300 brightness-70 z-0"
           style={{
             width: `${progressFraction * 100}%`,
             backgroundColor: interpolateColor(progressFraction),
-            zIndex: 0,
           }}
         />
       )}
 
       {/* Foreground nav content */}
-      <div className="flex justify-between items-center w-full px-4 h-full">
-        <TextBox width={12} height={3} content={leftContent} />
-        {!loading && <TextBox width={45} height={3} content={middleContent} />}
-        <TextBox width={12} height={3} content={rightContent} />
+      <div className="relative flex justify-between items-center w-full px-4 h-full z-10">
+        <TextBox width={12} height={1} content={leftContent} />
+        {!loading && <TextBox width={45} height={1} content={middleContent} />}
+        <TextBox width={12} height={1} content={rightContent} />
       </div>
     </div>
   );

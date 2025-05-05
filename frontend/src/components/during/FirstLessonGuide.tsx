@@ -16,7 +16,7 @@ export default function FirstLessonGuide() {
     ],
     [
       {text: `The position of a note will only be highlighted the first  \n`, className: 'text-fg'},
-      {text: `time you practice it. Play the ${note} to continue.`, className: 'text-fg'},
+      {text: `time you practice it. Play the ${note} on string ${string+1} to continue.`, className: 'text-fg'},
     ],
     [
       {text: `You're getting the hang of it :) If later you forget a note, \n`, className: 'text-fg'},
@@ -25,8 +25,16 @@ export default function FirstLessonGuide() {
       {text: ` to remind you.`, className: 'text-fg'},
     ],
     [
-      {text: `Last one. After this, you'll be timed and can start\n`, className: 'text-fg'},
-      {text: `progressing through the fretboard. Good luck!`, className: 'text-fg'},
+      {text: `The learning algorithm will guide you through the\n`, className: 'text-fg'},
+      {text: `fretboard at your own pace wth short daily lessons.`, className: 'text-fg'},
+    ],
+    [
+      {text: `This works best if you come back every day.\n`, className: 'text-fg'},
+      {text: `(but if you miss a day or two, the algorithm will adapt)`, className: 'text-fg'},
+    ],
+    [
+      {text: `Last note. After this, you'll start progressing through\n`, className: 'text-fg'},
+      {text: `the fretboard, starting with the first string. Good luck!`, className: 'text-fg'},
     ],
   ];
 

@@ -7,7 +7,7 @@ function During() {
   const { isFirstLesson, lessonStep } = useLesson();
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-0 md:gap-4">
       {isFirstLesson && lessonStep === 0 && (
         <div className="flex justify-center">
           <FirstLessonGuide />
@@ -15,7 +15,7 @@ function During() {
       )}
 
       {/* Main panel layout */}
-      <div className="flex border border-borderDebug gap-4">
+      <div className="flex gap-4">
         {/* Note Panel */}
         <div className="h-full flex justify-right">
           <NotePanelDuring />

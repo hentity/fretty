@@ -13,6 +13,7 @@ import {
   addAttempt,
   scheduleReview,
   pushBackReviews,
+  buildTutorial,
 } from '../logic/lessonUtils';
 import { Progress, Spot } from '../types';
 import { useAuth } from './UserContext';
@@ -30,6 +31,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const [lessonStep, setLessonStep] = useState(0);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [lessonQueue, setLessonQueue] = useState<Spot[]>([]);
+  const [tutorialQueue, setTutorialQueue] = useState<Spot[]>([]);
   const [completed, setCompleted]     = useState<Spot[]>([]);
   const [currentSpot, setCurrentSpot] = useState<Spot | null>(null);
   const [result, setResult]           = useState<PracticeResult>(null);
@@ -88,9 +90,12 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setProgress(progress);
     // saveProgress(progress);
 
-    if (progress.spots.every((s) => s.all_attempts === 0)) {
+    if (progress.spots.every((s) => s.is_new)) {
       setIsFirstLesson(true);
       setTutorialStep(0);
+      const [firstTutorial, ...restTutorial] = buildTutorial(progress)
+      setCurrentSpot(firstTutorial)
+      setTutorialQueue(restTutorial);
     } else {
       setIsFirstLesson(false);
     }
@@ -128,7 +133,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     if (!queue.length) {
       endLesson(finalSpot);
     } else {
-      const [next, rest] = getNextRandomSpot(queue);
+      const [next, rest] = getNextRandomSpot(queue, currentSpot?.note[0]);
       setLessonQueue(rest);
       setLessonStep((prev) => prev + 1);
       setCurrentSpot(next);
@@ -144,18 +149,19 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentSpot || !progress) return;
   
     if (newResult === null) {
+      console.log(tutorialQueue)
       // get next from the current queue
-      const [next, rest] = getNextRandomSpot(lessonQueue);
+      const [next, rest] = getNextRandomSpot(tutorialQueue);
     
       // re-add the current spot to the end
       rest.push(currentSpot);
     
-      setLessonQueue(rest);
+      setTutorialQueue(rest);
       setCurrentSpot(next);
       setResult(null);
       setIsPausing(false);
     
-      if (tutorialStep >= 3) {
+      if (tutorialStep >= 5) {
         setLessonStep((prev) => prev + 1);
         setIsFirstLesson(false);
       }
@@ -211,6 +217,16 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /* ------------------------------------------------------------------ */
+  /*  show fail                                                         */
+  /* ------------------------------------------------------------------ */
+  const showFail = () => {
+    if (!currentSpot) return;
+  
+    setResult('fail')
+    currentSpot.good_attempts = 0
+  };
+
+  /* ------------------------------------------------------------------ */
   /*  advance the day (for testing)                                     */
   /* ------------------------------------------------------------------ */
   const advanceDay = () => setDayOffset((d) => d + 1);
@@ -239,6 +255,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setTutorialStep,
     today,
     loading,
+    showFail,
   };
 
   return (

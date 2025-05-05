@@ -5,12 +5,12 @@ import { makeTextBlock } from '../../../styling/stylingUtils';
 import { ColoredChunk } from '../../../types';
 
 const STATIC_MARKERS = [
-  { fret: 3, string: 3 },
-  { fret: 5, string: 3 },
-  { fret: 7, string: 3 },
-  { fret: 9, string: 3 },
-  { fret:12, string: 2 },
-  { fret:12, string: 4 },
+  { fret: 3, string: 4 },
+  { fret: 5, string: 4 },
+  { fret: 7, string: 4 },
+  { fret: 9, string: 4 },
+  { fret:12, string: 3 },
+  { fret:12, string: 5 },
 ] as const;
 
 function rowChunks(
@@ -20,7 +20,7 @@ function rowChunks(
   currentSpotString: number | null
 ): ColoredChunk[] {
   const isCurrentString = stringNo === currentSpotString;
-  const rowClass = isCurrentString ? 'bg-fg text-bg' : 'text-fg';
+  const rowClass = isCurrentString ? 'bg-fg text-bg animate-pulse' : 'text-fg';
 
   const chunks: ColoredChunk[] = [
     { text: ` ${label} `, className: rowClass }, 
@@ -44,7 +44,7 @@ function rowChunks(
 }
 
 export default function Fretboard() {
-  const { progress, highlight, currentSpot } = useLesson();
+  const { progress, highlight, currentSpot, result, isPausing } = useLesson();
 
   const tuning = useMemo(
     () => (progress?.tuning ?? ['E','B','G','D','A','E']).map(s => s[0].toUpperCase()),
@@ -55,6 +55,25 @@ export default function Fretboard() {
 
   // if the current spot is new, show its position as persistent highlight
   const persistentHighlight = useMemo(() => {
+    if (!currentSpot) return {
+        string: 1,
+        fret: 0,
+        className: 'bg-bg',
+      };
+    if (result === 'fail') {
+      if (isPausing) {
+        return {
+          string: currentSpot.string + 1, // your fretboard is 1-indexed
+          fret: currentSpot.fret,
+          className: 'bg-fail animate-ping [animation-iteration-count:1] [animation-fill-mode:forwards]',
+        };
+      }
+      return {
+        string: currentSpot.string + 1, // your fretboard is 1-indexed
+        fret: currentSpot.fret,
+        className: 'bg-fail',
+      };
+    }
     if (currentSpot?.is_new) {
       return {
         string: currentSpot.string + 1, // your fretboard is 1-indexed
@@ -63,11 +82,11 @@ export default function Fretboard() {
       };
     }
     return highlight;
-  }, [currentSpot, highlight]);
+  }, [currentSpot, highlight, result, isPausing]);
 
   const content = useMemo(() => {
     const rows: ColoredChunk[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 5; i >= 0; i--) {
       rows.push(...rowChunks(tuning[i] ?? 'E', i + 1, persistentHighlight, currentString));
     }
     return makeTextBlock(rows);

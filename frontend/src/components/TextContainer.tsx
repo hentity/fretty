@@ -10,7 +10,7 @@ type TextContainerProps = {
 export const TextContainer: React.FC<TextContainerProps> = ({ width, height, children }) => {
   return (
     <div
-      className="relative flex justify-center items-center font-mono text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre select-none"
+      className="relative flex justify-center items-center font-mono leading-tight text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre select-none"
       style={{
         width: '100%',
         maxWidth: `${width}ch`,

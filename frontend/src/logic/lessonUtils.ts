@@ -95,6 +95,35 @@ export const buildLesson = (
   return lesson;
 };
 
+export const buildTutorial = (
+  progress: Progress,
+): Spot[] => {
+  const tutorial: Spot[] = [];
+
+  const tutorialSpot = (s: Spot): boolean => {
+    if (s.string == 0 && s.fret == 3) return true;
+    if (s.string == 2 && s.fret == 7) return true;
+    if (s.string == 4 && s.fret == 10) return true;
+    if (s.string == 2 && s.fret == 12) return true;
+    if (s.string == 3 && s.fret == 2) return true;
+    if (s.string == 5 && s.fret == 7) return true;
+    if (s.string == 0 && s.fret == 10) return true;
+    return false;
+  }
+
+  const spots = progress.spots.filter((s) => tutorialSpot(s));
+  tutorial.push(...spots)
+
+  // set status and attempt counts
+  tutorial.forEach((s) => {
+    s.status = 'learning';
+    s.good_attempts = 0;
+    s.all_attempts = 0;
+  });
+
+  return tutorial;
+};
+
 export const previewLesson = (
   progress: Progress,
   today = todayISO()
@@ -121,13 +150,42 @@ export const previewLesson = (
   return lesson
 }
 
-export function getNextRandomSpot(lesson: Spot[]): [Spot, Spot[]] {
-  const copy = [...lesson]
-  const maxIndex = Math.min(RANDOM_POP_LEN, copy.length)
-  const index = Math.floor(Math.random() * maxIndex)
-  const [nextSpot] = copy.splice(index, 1)
-  return [nextSpot, copy]
+/**
+ * pick the next spot from the lesson queue.
+ * wherever possible choose one whose first note-letter differs from `currentNote`
+ * to avoid repeating the same note back-to-back.
+ */
+export function getNextRandomSpot(
+  lesson: Spot[],
+  currentNote?: string | null,
+): [Spot, Spot[]] {
+  const copy = [...lesson];
+  const maxIndex = Math.min(RANDOM_POP_LEN, copy.length);
+
+  // quick exit for the original behaviour
+  if (currentNote == null) {
+    const index = Math.floor(Math.random() * maxIndex);
+    const [nextSpot] = copy.splice(index, 1);
+    return [nextSpot, copy];
+  }
+
+  // --- preferential selection ------------------------------------------
+  const primaryChoices: number[] = [];
+  for (let i = 0; i < maxIndex; i++) {
+    if (copy[i].note[0] !== currentNote) primaryChoices.push(i);
+  }
+
+  // fall back to original pool if no suitable alternative found
+  const pool =
+    primaryChoices.length > 0
+      ? primaryChoices
+      : Array.from({ length: maxIndex }, (_, i) => i);
+
+  const index = pool[Math.floor(Math.random() * pool.length)];
+  const [nextSpot] = copy.splice(index, 1);
+  return [nextSpot, copy];
 }
+
 
 export const LEARNING_GOOD_ATTEMPTS = 3
 const BASE_EASE_FACTOR = 1.6

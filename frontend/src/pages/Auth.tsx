@@ -1,5 +1,5 @@
 import { signInWithPopup } from 'firebase/auth';
-import { auth, provider, db } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { createDefaultProgress } from '../logic/progressUtils';
 import { useAuth } from '../context/UserContext';
@@ -53,7 +53,7 @@ export default function Auth() {
         className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold cursor-pointer transition',
         onClick: async () => {
           try {
-            const result = await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, googleProvider);
             const loggedInUser = result.user;
             await createProgressIfMissing(loggedInUser.uid);
             window.location.href = '/'; // Redirect manually after login

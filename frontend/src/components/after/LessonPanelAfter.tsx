@@ -49,7 +49,7 @@ function LessonPanelAfter() {
       const reviewDate = progress.spot_to_review_date[key] ?? 'unscheduled';
 
       const fraction = Math.min(
-        Math.log(spot.interval) / Math.log(MASTERED_THRESHOLD),
+        Math.log(spot.interval + 0.2) / Math.log(MASTERED_THRESHOLD + 0.2),
         1
       );
       const percent = Math.round(fraction * 100);
