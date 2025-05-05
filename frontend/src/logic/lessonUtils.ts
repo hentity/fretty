@@ -107,7 +107,7 @@ export const buildTutorial = (
     if (s.string == 2 && s.fret == 12) return true;
     if (s.string == 3 && s.fret == 2) return true;
     if (s.string == 5 && s.fret == 7) return true;
-    if (s.string == 0 && s.fret == 10) return true;
+    if (s.string == 1 && s.fret == 8) return true;
     return false;
   }
 
@@ -116,7 +116,6 @@ export const buildTutorial = (
 
   // set status and attempt counts
   tutorial.forEach((s) => {
-    s.status = 'learning';
     s.good_attempts = 0;
     s.all_attempts = 0;
   });
@@ -194,7 +193,7 @@ const MIN_EASE_FACTOR = 1.2
 const EASE_FACTOR_DROP = 0.2
 const EASE_FACTOR_BUMP = 0.2
 
-export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail') {
+export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail' | null) {
   if (spot.status === 'unlearnable') {
     console.log(`[SKIP] Spot at string ${spot.string}, fret ${spot.fret} is unlearnable.`)
     return spot

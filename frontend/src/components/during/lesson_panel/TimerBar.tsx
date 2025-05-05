@@ -195,6 +195,7 @@ export default function TimerBar({
           bufferRef.current = bufferRef.current.slice(chunkSize);
 
           const note = detect_note(chunk, audioCtx.sampleRate);
+          console.log(note)
           setNoteTxt(note ?? '—');
         }
       };

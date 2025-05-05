@@ -135,7 +135,7 @@ function Nav() {
   if (loading) return null;
 
   return (
-    <div className="relative w-screen overflow-x-hidden select-none py-2 md:py-6">
+    <div className="relative w-screen overflow-x-hidden select-none py-2 lg:py-6">
       {/* Background progress bar */}
       {!loading && (
         <div

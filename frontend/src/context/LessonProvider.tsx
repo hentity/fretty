@@ -81,14 +81,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Nothing to review');
       return;
     }
-
-    const [first, rest] = getNextRandomSpot(lesson);
-    setLessonQueue(rest);
-    setCompleted([]);
-    setCurrentSpot(first);
-    setLessonStatus('during');
-    setProgress(progress);
-    // saveProgress(progress);
+    console.log('progress', progress)
+    console.log('lesson', lesson)
 
     if (progress.spots.every((s) => s.is_new)) {
       setIsFirstLesson(true);
@@ -96,7 +90,15 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       const [firstTutorial, ...restTutorial] = buildTutorial(progress)
       setCurrentSpot(firstTutorial)
       setTutorialQueue(restTutorial);
+      setProgress(progress);
+      setLessonStatus('during');
     } else {
+      const [first, rest] = getNextRandomSpot(lesson);
+      setLessonQueue(rest);
+      setCompleted([]);
+      setCurrentSpot(first);
+      setLessonStatus('during');
+      setProgress(progress);
       setIsFirstLesson(false);
     }
   };
@@ -147,8 +149,11 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   const advance = (newResult: PracticeResult) => {
     if (!currentSpot || !progress) return;
+
+    console.log('lesson queue', lessonQueue)
+    console.log('new result', newResult)
   
-    if (newResult === null) {
+    if (newResult === null && isFirstLesson) {
       console.log(tutorialQueue)
       // get next from the current queue
       const [next, rest] = getNextRandomSpot(tutorialQueue);
@@ -162,7 +167,18 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       setIsPausing(false);
     
       if (tutorialStep >= 5) {
+        const lesson = buildLesson(progress, today);
+        if (!lesson.length) {
+          console.log('Nothing to review');
+          return;
+        }
         setLessonStep((prev) => prev + 1);
+        const [first, rest] = getNextRandomSpot(lesson);
+        setLessonQueue(rest);
+        setCompleted([]);
+        setCurrentSpot(first);
+        setLessonStatus('during');
+        setProgress(progress);
         setIsFirstLesson(false);
       }
       setTutorialStep((step) => step + 1);
@@ -194,11 +210,13 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       fail: 'bg-fail',
     } as const;
   
-    highlightSpot(
-      updatedSpot.string + 1,
-      updatedSpot.fret,
-      colourMap[newResult]
-    );
+    if (newResult) {
+      highlightSpot(
+        updatedSpot.string + 1,
+        updatedSpot.fret,
+        colourMap[newResult]
+      );
+    }
   
     // handle queue
     const nextQueue = [...lessonQueue];
