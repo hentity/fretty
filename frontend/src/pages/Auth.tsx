@@ -6,6 +6,7 @@ import { useAuth } from '../context/UserContext';
 import { ColoredChunk, Progress } from '../types';
 import { TextBox } from '../components/TextBox';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const LOCAL_STORAGE_KEY = 'fretty_guest_progress';
 
@@ -36,6 +37,7 @@ async function createProgressIfMissing(uid: string) {
 export default function Auth() {
   const { user, loading } = useAuth();
   const [content, setContent] = useState<ColoredChunk[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) return;
@@ -44,6 +46,9 @@ export default function Auth() {
       setContent([
         { text: 'You are already signed in. Redirecting...\n', className: 'text-fg' },
       ]);
+      setTimeout(() => {
+        navigate('/'); // Redirect to the main page after a short delay
+      }, 2000);
       return;
     }
 
