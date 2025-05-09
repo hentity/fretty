@@ -81,8 +81,6 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Nothing to review');
       return;
     }
-    console.log('progress', progress)
-    console.log('lesson', lesson)
 
     if (progress.spots.every((s) => s.is_new)) {
       setIsFirstLesson(true);
@@ -149,14 +147,10 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   const advance = (newResult: PracticeResult) => {
     if (!currentSpot || !progress) return;
-
-    console.log('lesson queue', lessonQueue)
-    console.log('new result', newResult)
   
     if (newResult === null && isFirstLesson) {
-      console.log(tutorialQueue)
       // get next from the current queue
-      const [next, rest] = getNextRandomSpot(tutorialQueue);
+      const [next, ...rest] = tutorialQueue;
     
       // re-add the current spot to the end
       rest.push(currentSpot);

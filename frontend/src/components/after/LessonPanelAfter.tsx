@@ -4,8 +4,7 @@ import { TextContainer } from '../TextContainer';
 import { makeTextBlock } from '../../styling/stylingUtils';
 import { useEffect, useState } from 'react';
 import { ColoredChunk } from '../../types';
-import { spotKey } from '../../logic/lessonUtils';
-import { MASTERED_THRESHOLD } from '../Nav';
+import { MASTERED_THRESHOLD, spotKey } from '../../logic/lessonUtils';
 import { useAuth } from '../../context/UserContext';
 
 const BAR_WIDTH = 20;

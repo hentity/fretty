@@ -64,9 +64,13 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
                 <span
                   key={j}
                   onClick={chunk.onClick}
+                  onMouseEnter={chunk.onMouseEnter}
+                  onMouseLeave={chunk.onMouseLeave}
+                  style={chunk.style}
                   className={`
                     ${chunk.className || ''}
-                    ${chunk.onClick ? 'cursor-pointer' : ''}
+                    ${chunk.onClick || chunk.onMouseEnter ? 'cursor-pointer' : ''}
+                    inline-block
                   `}
                 >
                   {chunk.text}

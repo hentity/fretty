@@ -54,6 +54,8 @@ export default function TimerBar({
   const workletRef   = useRef<AudioWorkletNode | null>(null);
   const streamRef    = useRef<MediaStream | null>(null);
   const bufferRef    = useRef<Float32Array>(new Float32Array());
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const gainRef   = useRef<GainNode | null>(null);
 
   /* ---------- timer tick ---------- */
   useEffect(() => {
@@ -148,83 +150,142 @@ export default function TimerBar({
     lessonStep,
   ]);
 
-  /* ---------- audio setup / teardown ---------- */
-  useEffect(() => {
-    const initial = isFirstLesson && lessonStep === 0;
-    const active  = lessonStatus === 'during' || initial;
-    if (!active) return;
+  function hardStopMic() {
+    /* 1. detach the graph BEFORE touching the stream ----------------------- */
+    sourceRef.current?.disconnect();
+    sourceRef.current = null;
+  
+    workletRef.current?.port.close();
+    workletRef.current?.disconnect();
+    workletRef.current = null;
+  
+    gainRef.current?.disconnect();
+    gainRef.current = null;
+  
+    /* 2. end every track *and* remove it from the MediaStream -------------- */
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => {
+        t.stop();
+        streamRef.current!.removeTrack(t);
+      });
+      streamRef.current = null;
+    }
+  
+    /* 3. close the context (no await needed) ------------------------------- */
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
+  
+    /* 4. local state cleanup ---------------------------------------------- */
+    bufferRef.current = new Float32Array();
+    setNoteTxt(null);
+    setRunning(false);
+    setFailing(false);
+  }
 
-    let stopped = false;
+/* ---------- audio setup / teardown ---------- */
+useEffect(() => {
+  /* when not actively in the lesson, shut everything down */
+  if (lessonStatus !== 'during') {
+    hardStopMic();
+    return;
+  }
 
-    (async () => {
-      await init();
+  /* flag that lets the async setup know we have already left 'during' */
+  let cancelled = false;
 
-      /* audio context */
-      const audioCtx = new AudioContext();
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
+  (async () => {
+    /* ---- STEP 1: wasm init --------------------------------------------- */
+    await init();
+    if (cancelled) return;
 
-      /* worklet */
-      const url = new URL('../../../components/worklet-processor.js', import.meta.url).href;
-      await audioCtx.audioWorklet.addModule(url);
-      const worklet = new AudioWorkletNode(audioCtx, 'buffer-processor');
+    /* ---- STEP 2: AudioContext ------------------------------------------ */
+    const audioCtx = new AudioContext();
+    if (cancelled) {
+      void audioCtx.close();
+      return;
+    }
+    await audioCtx.resume();
+    if (cancelled) {
+      void audioCtx.close();
+      return;
+    }
 
-      /* microphone */
-      const stream  = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const source  = audioCtx.createMediaStreamSource(stream);
-      const gain    = audioCtx.createGain();
-      source.connect(worklet);
-      gain.gain.value = 0;
-      worklet.connect(gain).connect(audioCtx.destination); // muted path
+    /* ---- STEP 3: load worklet ------------------------------------------ */
+    const wkUrl = new URL(
+      '../../../components/worklet-processor.js',
+      import.meta.url,
+    ).href;
+    await audioCtx.audioWorklet.addModule(wkUrl);
+    if (cancelled) {
+      void audioCtx.close();
+      return;
+    }
 
-      /* buffer size */
-      const chunkSec  = 0.5;
-      const chunkSize = Math.floor(audioCtx.sampleRate * chunkSec);
+    /* ---- STEP 4: request microphone ------------------------------------ */
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (cancelled) {
+      stream.getTracks().forEach(t => t.stop());
+      void audioCtx.close();
+      return;
+    }
 
-      /* onmessage */
-      worklet.port.onmessage = ({ data }) => {
-        if (stopped) return;
+    /* ---- STEP 5: wire graph -------------------------------------------- */
+    const source  = audioCtx.createMediaStreamSource(stream);
+    const gain    = audioCtx.createGain();
+    const worklet = new AudioWorkletNode(audioCtx, 'buffer-processor');
+    gain.gain.value = 0;
 
-        const inBuf      = data as Float32Array;
-        const combined   = new Float32Array(bufferRef.current.length + inBuf.length);
-        combined.set(bufferRef.current);
-        combined.set(inBuf, bufferRef.current.length);
-        bufferRef.current = combined;
+    source.connect(worklet);
+    worklet.connect(gain).connect(audioCtx.destination);
 
-        if (bufferRef.current.length >= chunkSize) {
-          const chunk = bufferRef.current.slice(0, chunkSize);
-          bufferRef.current = bufferRef.current.slice(chunkSize);
+    /* ---- STEP 6: buffer handling --------------------------------------- */
+    const sampleRate = audioCtx.sampleRate;
+    const maxBufferSize = Math.floor(sampleRate * 0.5); // retain 500ms of audio
+    let lastDetection = performance.now();
 
-          const note = detect_note(chunk, audioCtx.sampleRate);
-          console.log(note)
+    worklet.port.onmessage = ({ data }) => {
+      if (cancelled) return;
+    
+      const inBuf = data as Float32Array;
+      const combined = new Float32Array(bufferRef.current.length + inBuf.length);
+      combined.set(bufferRef.current);
+      combined.set(inBuf, bufferRef.current.length);
+      bufferRef.current = combined;
+    
+      // Keep only the latest 500ms of data
+      if (bufferRef.current.length > maxBufferSize) {
+        bufferRef.current = bufferRef.current.slice(bufferRef.current.length - maxBufferSize);
+      }
+    
+      // Run detection every 100ms
+      const now = performance.now();
+      if (now - lastDetection >= 100) {
+        lastDetection = now;
+    
+        if (bufferRef.current.length >= maxBufferSize) {
+          const chunk = bufferRef.current.slice(-maxBufferSize); // latest 500ms
+          const note = detect_note(chunk, sampleRate);
+          console.log(note);
           setNoteTxt(note ?? '—');
         }
-      };
-
-      /* keep refs */
-      audioCtxRef.current = audioCtx;
-      workletRef.current  = worklet;
-      streamRef.current   = stream;
-    })();
-
-    /* cleanup */
-    return () => {
-      stopped = true;
-      clearInterval(intervalRef.current!);
-
-      workletRef.current?.port.close();
-      workletRef.current?.disconnect();
-      streamRef.current?.getTracks().forEach(t => t.stop());
-      audioCtxRef.current?.close();
-
-      audioCtxRef.current = null;
-      workletRef.current  = null;
-      streamRef.current   = null;
-      bufferRef.current   = new Float32Array();
-      setNoteTxt(null);
-      setRunning(false);
-      setFailing(false);
+      }
     };
-  }, [lessonStatus, isFirstLesson, lessonStep]);
+
+    /* ---- STEP 7: store refs so we can clean up later ------------------- */
+    audioCtxRef.current = audioCtx;
+    workletRef.current  = worklet;
+    streamRef.current   = stream;
+    sourceRef.current   = source;
+    gainRef.current     = gain;
+  })();
+
+  /* cleanup fires when lessonStatus leaves 'during' ----------------------- */
+  return () => {
+    cancelled = true;    // tells the async setup to bail at the next guard
+    hardStopMic();
+  };
+}, [lessonStatus]);
+
 
   /* ---------- auto-advance when correct note is heard ---------- */
   useEffect(() => {
@@ -233,7 +294,7 @@ export default function TimerBar({
     if (!listening || isPausing || !currentSpot || !noteTxt || lessonStatus !== 'during')
       return;
 
-    if (noteTxt.startsWith(currentSpot.note)) {
+    if (currentSpot.note.startsWith(noteTxt)) {
       const initial = isFirstLesson && lessonStep === 0;
       const result: 'easy' | 'good' | 'hard' | 'fail' =
         failing ? 'fail' : ((): 'easy' | 'good' | 'hard' => {

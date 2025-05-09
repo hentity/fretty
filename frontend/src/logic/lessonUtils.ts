@@ -2,6 +2,7 @@ import { Spot, Progress } from '../types'
 
 export const MAX_DAILY_NOTES   = 5        // lesson size
 export const RANDOM_POP_LEN    = 2
+export const MASTERED_THRESHOLD = 10
 
 export const todayISO = (offsetDays = 0): string => {
   const date = new Date()
@@ -13,6 +14,15 @@ export const spotKey = (s: Spot): string => `${s.string}-${s.fret}`
 
 export const getSpotsByKeys = (spots: Spot[], keys: string[]) =>
   spots.filter((s) => keys.includes(spotKey(s)))
+
+export const getSpot = (spots: Spot[], string: number, fret: number) => {
+  const matching = spots.filter((s) => s.string == string && s.fret == fret)
+  if (matching.length == 1) return matching[0]
+  return null
+}
+
+export const getMasteryPct = (spot: Spot) =>
+  Math.min((Math.log(spot.interval + 0.2) / Math.log(MASTERED_THRESHOLD + 0.2)) * 100, 100)
 
 export const removeReview = (progress: Progress, spot: Spot) => {
   const key = spotKey(spot)
@@ -52,8 +62,6 @@ export const scheduleReview = (
     }
     target.setDate(target.getDate() + 1)
   }
-
-  console.log(progress)
 }
 
 export const buildLesson = (
@@ -100,19 +108,23 @@ export const buildTutorial = (
 ): Spot[] => {
   const tutorial: Spot[] = [];
 
-  const tutorialSpot = (s: Spot): boolean => {
-    if (s.string == 0 && s.fret == 3) return true;
-    if (s.string == 2 && s.fret == 7) return true;
-    if (s.string == 4 && s.fret == 10) return true;
-    if (s.string == 2 && s.fret == 12) return true;
-    if (s.string == 3 && s.fret == 2) return true;
-    if (s.string == 5 && s.fret == 7) return true;
-    if (s.string == 1 && s.fret == 8) return true;
-    return false;
+  const tutorialOrder: [number, number][] = [
+    [0, 3],
+    [1, 3],
+    [1, 5],
+    [2, 7],
+    [4, 1],
+    [5, 10],
+    // [1, 8], // optional
+  ];
+  
+  const spots: Spot[] = [];
+  for (const [string, fret] of tutorialOrder) {
+    const match = progress.spots.find((s) => s.string === string && s.fret === fret);
+    if (match) spots.push(match);
   }
-
-  const spots = progress.spots.filter((s) => tutorialSpot(s));
-  tutorial.push(...spots)
+  
+  tutorial.push(...spots);
 
   // set status and attempt counts
   tutorial.forEach((s) => {
@@ -204,6 +216,7 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
   console.log(`🎯 Before: ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}`)
 
   spot.all_attempts += 1
+  spot.num_practices += 1
   spot.is_new = false
   
   if (spot.status === 'learning' || spot.status === 'review') {
@@ -240,7 +253,6 @@ export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail'
     }
     
     spot.status = 'review'
-    spot.num_practices += 1
   }
 
   console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}, all_attempts=${spot.all_attempts}`)

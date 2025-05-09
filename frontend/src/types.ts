@@ -24,6 +24,9 @@ export interface Progress {
 export type ColoredChunk = {
   text: string;
   onClick?: () => void;
+  onMouseEnter? : () => void;
+  onMouseLeave? : () => void;
+  style?: React.CSSProperties;
   className?: string;
   noPadding?: boolean;
 };

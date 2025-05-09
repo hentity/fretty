@@ -7,9 +7,7 @@ import { interpolateColor, makeTextBlock } from '../styling/stylingUtils';
 import { useEffect, useState } from 'react';
 import { ColoredChunk } from '../types';
 import { useLesson } from '../context/LessonContext';
-import { LEARNING_GOOD_ATTEMPTS, spotKey } from '../logic/lessonUtils';
-
-export const MASTERED_THRESHOLD = 10;
+import { LEARNING_GOOD_ATTEMPTS, MASTERED_THRESHOLD, spotKey } from '../logic/lessonUtils';
 
 async function logoutAndRedirect(navigate: ReturnType<typeof useNavigate>) {
   try {
@@ -54,7 +52,7 @@ function Nav() {
     if (currentPath === '/') {
       setLeftContent(makeTextBlock([
         user
-          ? { text: '[ profile ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile') }
+          ? { text: '[ progress ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile') }
           : { text: '[ sign in ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/auth') }
       ]));
     } else {
