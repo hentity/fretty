@@ -265,7 +265,6 @@ useEffect(() => {
         if (bufferRef.current.length >= maxBufferSize) {
           const chunk = bufferRef.current.slice(-maxBufferSize); // latest 500ms
           const note = detect_note(chunk, sampleRate);
-          console.log(note);
           setNoteTxt(note ?? '—');
         }
       }
