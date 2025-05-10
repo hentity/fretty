@@ -125,12 +125,14 @@ export default function Profile() {
           text: ` ${char}`,
           className,
           style,
-          onMouseEnter: () => setHoveredInfo(entry.info),
-          onMouseLeave: () => setHoveredInfo(null),
         };
 
-        if (isTouch && entry.status !== 'unpracticed') {
-          chunk.onClick = () => setToggledKey(key === toggledKey ? null : key);
+        if (entry.status !== 'unpracticed') {
+            if (isTouch) {
+                chunk.onClick = () => setToggledKey(key === toggledKey ? null : key);
+            }
+            chunk.onMouseEnter = () => setHoveredInfo(entry.info);
+            chunk.onMouseLeave = () => setHoveredInfo(null);
         }
 
         chunks.push(chunk);

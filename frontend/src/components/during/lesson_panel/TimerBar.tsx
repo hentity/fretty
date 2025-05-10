@@ -166,6 +166,7 @@ export default function TimerBar({
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => {
         t.stop();
+        t.enabled = false;
         streamRef.current!.removeTrack(t);
       });
       streamRef.current = null;
