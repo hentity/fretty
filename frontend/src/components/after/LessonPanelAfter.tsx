@@ -53,7 +53,7 @@ function LessonPanelAfter() {
         Math.log(spot.interval + 0.2) / Math.log(MASTERED_THRESHOLD + 0.2),
         1
       );
-      const percent = Math.round(fraction * 100);
+      const percent = String(Math.round(fraction * 100)).padStart(3, ' ');
       const filled = Math.round(fraction * BAR_WIDTH);
       const empty = BAR_WIDTH - filled;
 
@@ -76,7 +76,7 @@ function LessonPanelAfter() {
       
           if (!isNaN(reviewDateObj.getTime())) {
             const diffMs = reviewDateObj.getTime() - now.getTime();
-            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
       
             if (diffDays === 1) {
               relative = 'tomorrow';
@@ -109,7 +109,7 @@ function LessonPanelAfter() {
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-full overflow-y-auto">
-      <TextBox width={90} height={2} content={tip} />
+      <TextBox width={90} height={3} content={tip} />
       <TextContainer width={90} height={height+1}>
         <div className="flex flex-row items-center justify-center w-full h-full">
           <TextBox width={27} height={height} content={noteChunks} />
@@ -117,7 +117,7 @@ function LessonPanelAfter() {
           <TextBox width={28} height={height} content={reviewChunks} />
         </div>
       </TextContainer>
-      <TextBox width={90} height={1} content={seeYaTomorrow} />
+      <TextBox width={90} height={2} content={seeYaTomorrow} />
     </div>
   );
 }

@@ -201,7 +201,7 @@ export default function Profile() {
 
     pctContent = [
       {
-        text: `${hoveredInfo.numPractices} practice${hoveredInfo.numPractices === 1 ? '' : 's'} | ${Math.round(hoveredInfo.masteryPct)}% mastered | next review ${relative}`,
+        text: `${hoveredInfo.numPractices} practice${hoveredInfo.numPractices === 1 ? '' : 's'} | ${String(Math.round(hoveredInfo.masteryPct)).padStart(3, ' ')}% mastered | next review ${relative}`,
         className: 'text-fg',
       },
     ];
