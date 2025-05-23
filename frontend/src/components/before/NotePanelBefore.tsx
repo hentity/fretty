@@ -1,5 +1,5 @@
 import { useLesson } from '../../context/LessonContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TextBox } from '../TextBox';
 import { TextContainer } from '../TextContainer';
 import { makeTextBlock } from '../../styling/stylingUtils';
@@ -7,32 +7,36 @@ import { makeTextBlock } from '../../styling/stylingUtils';
 function NotePanelBefore() {
   const { startLesson } = useLesson();
   const [countdownStarted, setCountdownStarted] = useState(false);
+  const [micGranted, setMicGranted] = useState(false);
   const [remaining, setRemaining] = useState(5);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  // countdown side-effect
   useEffect(() => {
-    if (!countdownStarted || remaining <= 0) return;
-  
+    if (!countdownStarted || remaining <= 0 || !micGranted) return;
+
     const timer = setTimeout(() => setRemaining(r => r - 1), 1000);
     return () => clearTimeout(timer);
-  }, [countdownStarted, remaining]);
+  }, [countdownStarted, remaining, micGranted]);
 
-  const handleStart = () => {
-    if (!countdownStarted) {
+  // trigger lesson start after countdown
+  useEffect(() => {
+    if (countdownStarted && remaining <= 0 && micGranted) {
+      startLesson();
+    }
+  }, [countdownStarted, remaining, micGranted, startLesson]);
+
+  const handleStart = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      setMicGranted(true);
       setCountdownStarted(true);
       setRemaining(5);
+    } catch (err) {
+      console.error('Mic access denied or failed:', err);
+      alert('Microphone access is required to begin. Please check browser permissions.');
     }
   };
-
-  // after countdown ends, trigger mic + lesson
-  if (countdownStarted && remaining <= 0) {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(() => startLesson())
-      .catch((err) => {
-        console.error('Mic access denied or failed:', err);
-        alert('Microphone access is required to begin. Please check browser permissions.');
-      });
-  }
 
   return (
     <div className="flex justify-center items-center w-full h-full">
@@ -53,7 +57,7 @@ function NotePanelBefore() {
             <TextBox
               width={20}
               height={3}
-              content={[{ text: `Starting in ${remaining}...`, className: 'text-fg font-bold' }]}
+              content={[{ text: `starting in ${remaining}...`, className: 'text-fg font-bold' }]}
             />
           )}
         </div>

@@ -5,8 +5,8 @@ export function getSpot(spots: Spot[], string: number, fret: number): Spot | und
   return spots.find(spot => spot.string === string && spot.fret === fret)
 }
 
-export function createDefaultProgress(): Progress {
-  const tuning = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
+export function createDefaultProgress(customTuning?: string[]): Progress {
+  const tuning = customTuning ?? ['E2', 'A2', 'D3', 'G3', 'B3', 'E4']
 
   const spots: Spot[] = []
   for (let string = 0; string < 6; string++) {

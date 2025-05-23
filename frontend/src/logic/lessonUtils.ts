@@ -1,4 +1,5 @@
 import { Spot, Progress } from '../types'
+import { spotToNote } from './noteUtils'
 
 export const MAX_DAILY_NOTES   = 5        // lesson size
 export const RANDOM_POP_LEN    = 2
@@ -106,33 +107,39 @@ export const buildLesson = (
 export const buildTutorial = (
   progress: Progress,
 ): Spot[] => {
-  const tutorial: Spot[] = [];
 
-  const tutorialOrder: [number, number][] = [
-    [0, 3],
-    [1, 3],
-    [1, 5],
-    [2, 7],
-    [4, 1],
-    [5, 10],
-    // [1, 8], // optional
+  // specify tutorial as (note, string) pairs
+  const targetPairs: [string, number][] = [
+    ['G', 0],
+    ['B', 1],
+    ['D', 1],
+    ['G', 2],
+    ['A', 4],
+    ['F', 5],
   ];
-  
-  const spots: Spot[] = [];
-  for (const [string, fret] of tutorialOrder) {
-    const match = progress.spots.find((s) => s.string === string && s.fret === fret);
-    if (match) spots.push(match);
-  }
-  
-  tutorial.push(...spots);
 
-  // set status and attempt counts
-  tutorial.forEach((s) => {
+  const spots: Spot[] = [];
+
+  for (const [targetNote, string] of targetPairs) {
+    for (let fret = 1; fret <= 12; fret++) {
+      const { note } = spotToNote(string, fret, progress.tuning);
+      if (note === targetNote) {
+        const match = progress.spots.find((s) => s.string === string && s.fret === fret);
+        if (match) {
+          spots.push(match);
+        }
+        break; // Stop at first match
+      }
+    }
+  }
+
+  // Set progress fields
+  spots.forEach((s) => {
     s.good_attempts = 0;
     s.all_attempts = 0;
   });
 
-  return tutorial;
+  return spots;
 };
 
 export const previewLesson = (

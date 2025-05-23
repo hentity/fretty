@@ -11,6 +11,7 @@ export function makeTextBlock(
     style: chunk.style,
     className: chunk.className,
     noPadding: chunk.noPadding,
+    manualWidth: chunk.manualWidth,
   }));
 }
 

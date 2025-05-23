@@ -22,7 +22,7 @@ export default function Before() {
   if (loading || !progress) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full">
-        <TextBox width={30} height={3} content={[{ text: 'Loading progress...', className: 'text-fg' }]} />
+        <TextBox width={30} height={3} content={[{ text: 'Loading...', className: 'text-fg' }]} />
       </div>
     );
   }

@@ -21,12 +21,15 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
         currentLineChunks = [];
         currentLength = 0;
       }
+
       if (part.length > 0) {
+        const manualWidth = chunk.manualWidth ?? part.length;
         currentLineChunks.push({
           ...chunk,
           text: part,
+          manualWidth,
         });
-        currentLength += part.length;
+        currentLength += manualWidth;
       }
     });
   });
@@ -57,30 +60,41 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
         const rightPad = hasNoPadding ? 0 : width - lineLength - leftPad;
 
         return (
-          <div key={idx} className={"flex justify-center select-none"}>
+          <div key={idx} className="flex justify-center select-none">
             <span className="flex">
               <span>{' '.repeat(leftPad)}</span>
-              {line.chunks.map((chunk, j) => (
-                <span
-                  key={j}
-                  onClick={chunk.onClick}
-                  onMouseEnter={chunk.onMouseEnter}
-                  onMouseLeave={chunk.onMouseLeave}
-                  style={chunk.style}
-                  className={`
-                    ${chunk.className || ''}
-                    ${chunk.onClick || chunk.onMouseEnter ? 'cursor-pointer' : ''}
-                    inline-block
-                  `}
-                >
-                  {chunk.text}
-                </span>
-              ))}
+              {line.chunks.map((chunk, j) => {
+                const manualWidth = chunk.manualWidth;
+                const spanStyle: React.CSSProperties = {
+                  ...chunk.style,
+                  display: 'inline-block',
+                  width: manualWidth ? `${manualWidth}ch` : undefined,
+                  textAlign: manualWidth ? 'center' : undefined,
+                  whiteSpace: 'pre', // prevent trimming of whitespace
+                };
+
+                return (
+                  <span
+                    key={j}
+                    onClick={chunk.onClick}
+                    onMouseEnter={chunk.onMouseEnter}
+                    onMouseLeave={chunk.onMouseLeave}
+                    style={spanStyle}
+                    className={`
+                      ${chunk.className || ''}
+                      ${chunk.onClick || chunk.onMouseEnter ? 'cursor-pointer' : ''}
+                    `}
+                  >
+                    {chunk.text}
+                  </span>
+                );
+              })}
               <span>{' '.repeat(rightPad)}</span>
             </span>
           </div>
         );
       })}
+
 
       {/* Bottom padding */}
       {Array.from({ length: bottomPadding }).map((_, i) => (

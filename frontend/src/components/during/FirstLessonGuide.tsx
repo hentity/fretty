@@ -19,7 +19,7 @@ export default function FirstLessonGuide() {
       {text: `time you practice it. Play the ${note} on string ${string+1} to continue.`, className: 'text-fg'},
     ],
     [
-      {text: `You're getting the hang of it :) If later you forget a note, \n`, className: 'text-fg'},
+      {text: `You're getting the hang of it :) If you forget a note, \n`, className: 'text-fg'},
       {text: `don't stress - it will be highlighted in `, className: 'text-fg'},
       {text: `red`, className: 'text-fail font-bold'},
       {text: ` to remind you.`, className: 'text-fg'},
@@ -30,7 +30,7 @@ export default function FirstLessonGuide() {
     ],
     [
       {text: `This works best if you come back every day.\n`, className: 'text-fg'},
-      {text: `(but if you miss a day or two, the algorithm will adapt)`, className: 'text-fg'},
+      {text: `(but if you miss some days, the algorithm will adapt)`, className: 'text-fg'},
     ],
     [
       {text: `Last note. After this, you'll start progressing through\n`, className: 'text-fg'},

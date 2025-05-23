@@ -20,6 +20,12 @@ export default function Help() {
       className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg transition font-bold',
       onClick: () => window.open('https://github.com/hentity/fretty', '_blank')
     },
+    {text: '  ', className: 'text-fg'},
+    {
+      text: '[ support ]',
+      className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg transition font-bold',
+      onClick: () => window.open('https://buymeacoffee.com/hhame4g', '_blank')
+    },
   ]
 
   return (

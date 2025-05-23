@@ -151,7 +151,12 @@ export default function TimerBar({
   ]);
 
   function hardStopMic() {
-    /* 1. detach the graph BEFORE touching the stream ----------------------- */
+    // step 1: suspend audio context if active
+    if (audioCtxRef.current?.state === 'running') {
+      audioCtxRef.current.suspend().catch(() => {});
+    }
+  
+    // step 2: disconnect nodes (stop audio flow)
     sourceRef.current?.disconnect();
     sourceRef.current = null;
   
@@ -162,21 +167,23 @@ export default function TimerBar({
     gainRef.current?.disconnect();
     gainRef.current = null;
   
-    /* 2. end every track *and* remove it from the MediaStream -------------- */
+    // step 3: stop and release media stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => {
-        t.stop();
+        t.stop();          // stops the mic
         t.enabled = false;
         streamRef.current!.removeTrack(t);
       });
       streamRef.current = null;
     }
   
-    /* 3. close the context (no await needed) ------------------------------- */
-    audioCtxRef.current?.close().catch(() => {});
-    audioCtxRef.current = null;
+    // step 4: close audio context (optional, safe fallback)
+    if (audioCtxRef.current) {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
   
-    /* 4. local state cleanup ---------------------------------------------- */
+    // step 5: internal cleanup
     bufferRef.current = new Float32Array();
     setNoteTxt(null);
     setRunning(false);

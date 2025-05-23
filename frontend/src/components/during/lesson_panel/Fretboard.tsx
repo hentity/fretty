@@ -23,7 +23,7 @@ function rowChunks(
   const rowClass = isCurrentString ? 'bg-fg text-bg animate-pulse' : 'text-fg';
 
   const chunks: ColoredChunk[] = [
-    { text: ` ${label} `, className: rowClass }, 
+    { text: `${label}`, className: rowClass, manualWidth: 3},
     { text: `║`, className: 'text-fg' }
   ];
 
@@ -47,7 +47,7 @@ export default function Fretboard() {
   const { progress, highlight, currentSpot, result, isPausing } = useLesson();
 
   const tuning = useMemo(
-    () => (progress?.tuning ?? ['E','B','G','D','A','E']).map(s => s[0].toUpperCase()),
+    () => (progress?.tuning ?? ['E','B','G','D','A','E']).map(s => s.slice(0, -1).toUpperCase()),
     [progress]
   );
 

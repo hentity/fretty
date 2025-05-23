@@ -29,4 +29,5 @@ export type ColoredChunk = {
   style?: React.CSSProperties;
   className?: string;
   noPadding?: boolean;
+  manualWidth?: number;
 };

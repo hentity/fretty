@@ -8,6 +8,7 @@ import Nav from './components/Nav';
 import Profile from './pages/Profile';
 import Tilt from './components/Tilt';
 import AuthGate from './components/AuthGate';
+import Options from './pages/Options';
 
 function App() {
   useEffect(() => {
@@ -34,7 +35,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/about" element={<Help />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/options" element={<Options />} />
             </Routes>
           </div>
         </LessonProvider>

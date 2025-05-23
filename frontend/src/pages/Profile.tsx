@@ -49,6 +49,7 @@ export default function Profile() {
   const { progress } = useLesson();
   const [hoveredInfo, setHoveredInfo] = useState<SpotInfo | null>(null);
   const [toggledKey, setToggledKey] = useState<SpotKey | null>(null);
+  const [noPractices, setNoPractices] = useState(true);
   const isTouch = useIsTouchDevice();
 
   const spotMap = useMemo(() => {
@@ -57,6 +58,7 @@ export default function Profile() {
 
     for (const spot of progress.spots) {
       if (spot.status === 'unlearnable') continue;
+      if (spot.status != 'unseen') setNoPractices(false);
       const key = `${spot.string + 1}-${spot.fret}` as SpotKey;
       const label = spot.note?.[0]?.toUpperCase() ?? ' ';
       let status: SpotStatus = 'unpracticed';
@@ -78,7 +80,7 @@ export default function Profile() {
   }, [progress]);
 
   const tuning = useMemo(
-    () => (progress?.tuning ?? ['E', 'B', 'G', 'D', 'A', 'E']).map(s => s[0].toUpperCase()),
+    () => (progress?.tuning ?? ['E', 'B', 'G', 'D', 'A', 'E']).map(s => s.slice(0, -1).toUpperCase()),
     [progress]
   );
 
@@ -92,7 +94,7 @@ export default function Profile() {
     if (!progress) return [];
 
     const chunks: ColoredChunk[] = [
-      { text: ` ${label} `, className: 'text-fg' },
+      { text: `${label}`, className: 'text-fg', manualWidth: 3},
       { text: `║`, className: 'text-fg' },
     ];
 
@@ -165,7 +167,7 @@ export default function Profile() {
 
   let pctContent: ColoredChunk[] = [
     {
-      text: `${isTouch ? 'tap on' : 'hover'} a note for details`,
+      text: noPractices ? 'progress will be displayed here' : (`${isTouch ? 'tap on' : 'hover'} a note for details`),
       className: 'text-fg',
     },
   ];
@@ -178,8 +180,10 @@ export default function Profile() {
     if (!isNaN(reviewDate.getTime())) {
       const diffMs = reviewDate.getTime() - now.getTime();
       const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-    
-      if (diffDays === 1) {
+      
+      if (diffDays === 0) {
+        relative = 'today'
+      } else if (diffDays === 1) {
         relative = `tomorrow`
       } else if (diffDays < 7) {
         relative = `in ${diffDays} day${diffDays === 1 ? '' : 's'}`;

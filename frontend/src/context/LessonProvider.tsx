@@ -109,6 +109,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
 
     const updatedProgress: Progress = {
       ...progress,
+      new: false,
       last_review_date: today,
       spots: progress.spots.map((s) =>
         s.string === finalSpot.string && s.fret === finalSpot.fret

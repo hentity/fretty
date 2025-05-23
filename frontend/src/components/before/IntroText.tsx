@@ -4,8 +4,8 @@ import { makeTextBlock } from '../../styling/stylingUtils';
 
 const LINES = [
   'This site is designed to teach you the notes of the',
-  'fretboard with short daily lessons. Grab a guitar  ',
-  'and click below to start your first lesson.        '
+  'fretboard with short daily lessons. Grab a tuned   ',
+  'guitar and click below to start.                   '
 ];
 const LINE_WIDTH = 80;
 const TYPING_SPEED = 5; // ms per character

@@ -16,7 +16,9 @@
     --color-borderDebug: #1c1917;
 
     --color-fg: #fefae0;
+    /* --color-fg: #ffffff; */
     --color-bg: #1c1917;
+    /* --color-bg: #000000; */
 
     --color-easy: #5498ab;
     --color-good: #6a994e;
