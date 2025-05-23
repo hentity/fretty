@@ -97,7 +97,7 @@ export default function Options() {
             className: "text-hard",
           }
         : {
-            text: "[ update tuning ]\n",
+            text: "\n[ update tuning ]\n",
             className: hasChanged
               ? "text-fg font-bold hover:bg-fg hover:text-bg active:bg-fg active:text-bg cursor-pointer"
               : "text-fg font-bold brightness-60",
