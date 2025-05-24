@@ -17,6 +17,7 @@ function Home() {
       </div>
 
       {/* about / donate buttons */}
+      {lessonStatus !== 'during' && 
       <div className="fixed bottom-2 font-mono text-fg text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl brightness-80 flex gap-1 items-center">
         <Link
           to="/help"
@@ -46,6 +47,7 @@ function Home() {
           support
         </a>
       </div>
+      }
     </div>
   )
 }

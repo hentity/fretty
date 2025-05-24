@@ -104,12 +104,13 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   /*  end the lesson                                                    */
   /* ------------------------------------------------------------------ */
-  const endLesson = (finalSpot: Spot) => {
+  const endLesson = async (finalSpot: Spot) => {
     if (!progress) return;
 
     const updatedProgress: Progress = {
       ...progress,
       new: false,
+      recentSpots: completed,
       last_review_date: today,
       spots: progress.spots.map((s) =>
         s.string === finalSpot.string && s.fret === finalSpot.fret
@@ -119,12 +120,14 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     };
     delete updatedProgress.review_date_to_spots[today];
     setProgress(updatedProgress);
-    saveProgress(updatedProgress);
+    await saveProgress(updatedProgress); // wait for save to complete
 
-    setLessonStatus('after');
-    setLessonQueue([]);
-    setCurrentSpot(null);
-    setResult(null);
+    window.location.href = '/'; // refresh necessary to remove mic icon
+
+    // setLessonStatus('after');
+    // setLessonQueue([]);
+    // setCurrentSpot(null);
+    // setResult(null);
   };
 
   /* ------------------------------------------------------------------ */

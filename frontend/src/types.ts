@@ -15,6 +15,7 @@ export interface Spot {
 export interface Progress {
   new: boolean;
   tuning: string[];
+  recentSpots: Spot[] | null; // spots completed in the most recent lesson
   last_review_date: string | null;
   review_date_to_spots: Record<string, string[]>;
   spot_to_review_date: Record<string, string>;

@@ -65,6 +65,10 @@ export default function Auth() {
           }
         }
       },
+      {
+        text: '\n\n(saves your progress across devices)',
+        className: 'text-fg brightness-80'
+      },
     ];
 
     setContent(loginText);

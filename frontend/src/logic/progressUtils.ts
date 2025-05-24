@@ -33,6 +33,7 @@ export function createDefaultProgress(customTuning?: string[]): Progress {
   return {
     new: true,
     tuning,
+    recentSpots: null,
     last_review_date: null,
     review_date_to_spots: {},
     spot_to_review_date: {},
