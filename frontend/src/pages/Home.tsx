@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom'
 import { useLesson } from '../context/LessonContext'
+import { Capacitor } from '@capacitor/core';
 
 import Before from '../components/before/Before'
 import During from '../components/during/During'
 import After from '../components/after/After'
 
+
 function Home() {
   const { lessonStatus } = useLesson()
+
+  const isWeb = Capacitor.getPlatform() === 'web';
 
   return (
     <div className="flex flex-col flex-grow items-center justify-center overflow-hidden relative">
@@ -17,7 +21,7 @@ function Home() {
       </div>
 
       {/* about / donate buttons */}
-      {lessonStatus !== 'during' && 
+      {lessonStatus !== 'during' && isWeb && 
       <div className="fixed bottom-2 font-mono text-fg text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl brightness-80 flex gap-1 items-center">
         <Link
           to="/help"

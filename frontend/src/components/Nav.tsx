@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../firebase';
 import { useAuth } from '../context/UserContext';
 import { TextBox } from '../components/TextBox';
@@ -18,8 +19,6 @@ async function logoutAndRedirect(navigate: ReturnType<typeof useNavigate>) {
     console.error('Error signing out:', error);
   }
 }
-
-
 
 function Nav() {
   const navigate = useNavigate();
@@ -40,6 +39,8 @@ function Nav() {
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
   const [progressFraction, setProgressFraction] = useState(0);
 
+  const isWeb = Capacitor.getPlatform() === 'web';
+
   useEffect(() => {
     // --------------------------------
     // Skip logic until loading is done
@@ -49,7 +50,13 @@ function Nav() {
     // ----------------------------
     // Calculate left content
     // ----------------------------
-    if (currentPath === '/' || currentPath === '/options') {
+    if (!isWeb) {
+      if (currentPath === '/profile') {
+        setLeftContent([{text: '[ back ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/')}])
+      } else {
+        setLeftContent([{text: '[ progress ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile')}])
+      }
+    } else if (currentPath === '/' || currentPath === '/options') {
       setLeftContent(makeTextBlock([
         user
           ? { text: '[ profile ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile') }
@@ -57,7 +64,7 @@ function Nav() {
       ]));
     } else {
       setLeftContent(makeTextBlock([
-        { text: '[ home ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/') }
+        { text: '[ back ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/') }
       ]));
     }
 
@@ -103,28 +110,28 @@ function Nav() {
 
     setMiddleContent(makeTextBlock(
       [
-        { text: '{ ', className: 'text-fg bg-bg font-bold' },
-        { text: `${practicing} `, className: 'text-practiced bg-bg font-bold' },
-        { text: 'learning   ', className: 'text-fg bg-bg' },
-        { text: `${mastered} `, className: 'text-mastered bg-bg font-bold' },
-        { text: 'mastered   ', className: 'text-fg bg-bg' },
+        { text: ' ', className: 'text-fg font-bold' },
+        { text: `${practicing} `, className: 'text-practiced font-bold' },
+        { text: 'learning   ', className: 'text-fg' },
+        { text: `${mastered} `, className: 'text-mastered font-bold' },
+        { text: 'mastered   ', className: 'text-fg' },
         { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
-        { text: 'unpracticed', className: 'text-fg bg-bg' },
-        { text: ' }', className: 'text-fg bg-bg font-bold' },
+        { text: 'unpracticed', className: 'text-fg' },
+        { text: ' ', className: 'text-fg font-bold' },
       ].map(item => ({ ...item, onClick: () => navigate('/profile') }))
     ));
 
     // ----------------------------
     // Right content
     // ----------------------------
-    if (currentPath === '/profile') {
+    if (currentPath === '/profile' && isWeb) {
       setRightContent(makeTextBlock([
         { text: user ? '[ sign out ]' : '[ sign in ]', className: 'text-fg font-bold active:text-bg active:bg-fg hover:text-bg hover:bg-fg transition', 
           onClick: () => user ? logoutAndRedirect(navigate) : navigate('/auth')}
       ]));
     } else if (currentPath === '/options') {
       setRightContent(makeTextBlock([
-        { text: '[ home ]', className: 'text-fg active:text-bg active:bg-fg hover:bg-fg hover:text-bg font-bold transition', onClick: () => navigate('/') }
+        { text: '[ back ]', className: 'text-fg active:text-bg active:bg-fg hover:bg-fg hover:text-bg font-bold transition', onClick: () => navigate('/') }
       ]));
     } else {
       setRightContent(makeTextBlock([
@@ -136,11 +143,11 @@ function Nav() {
   if (loading) return null;
 
   return (
-    <div className="relative w-screen overflow-x-hidden select-none py-2 lg:py-6">
+    <div className="relative w-screen overflow-x-hidden select-none pt-4 px-4 lg:py-8 lg:py-6">
       {/* Background progress bar */}
       {!loading && (
         <div
-          className="absolute bottom-0 left-0 h-1 transition-all duration-300 brightness-70 z-0"
+          className="fixed top-0 left-0 w-full h-2 opacity-70 z-0 transition-all"
           style={{
             width: `${progressFraction * 100}%`,
             backgroundColor: interpolateColor(progressFraction),
@@ -151,7 +158,7 @@ function Nav() {
       {/* Foreground nav content */}
       <div className="relative flex justify-between items-center w-full px-4 h-full z-10">
         <TextBox width={12} height={1} content={leftContent} />
-        {!loading && <TextBox width={45} height={1} content={middleContent} />}
+        {!loading && <TextBox width={50} height={1} content={middleContent} />}
         <TextBox width={12} height={1} content={rightContent} />
       </div>
     </div>

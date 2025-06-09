@@ -8,7 +8,7 @@ function NotePanelBefore() {
   const { startLesson } = useLesson();
   const [countdownStarted, setCountdownStarted] = useState(false);
   const [micGranted, setMicGranted] = useState(false);
-  const [remaining, setRemaining] = useState(5);
+  const [remaining, setRemaining] = useState(3);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
@@ -31,10 +31,10 @@ function NotePanelBefore() {
       streamRef.current = stream;
       setMicGranted(true);
       setCountdownStarted(true);
-      setRemaining(5);
+      setRemaining(3);
     } catch (err) {
       console.error('Mic access denied or failed:', err);
-      alert('Microphone access is required to begin. Please check browser permissions.');
+      alert('Microphone access is required to begin. Please check permissions.');
     }
   };
 

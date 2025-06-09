@@ -3,7 +3,7 @@ import { TextBox } from '../../components/TextBox';
 import { makeTextBlock } from '../../styling/stylingUtils';
 
 const LINES = [
-  'This site is designed to teach you the notes of the',
+  'This app is designed to teach you the notes of the ',
   'fretboard with short daily lessons. Grab a tuned   ',
   'guitar and click below to start.                   '
 ];

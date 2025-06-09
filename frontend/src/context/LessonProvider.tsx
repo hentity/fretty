@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import {
   LessonContext,
   LessonContextType,
@@ -18,6 +19,7 @@ import {
 import { Progress, Spot } from '../types';
 import { useAuth } from './UserContext';
 import useProgress from '../hooks/useProgress';
+import { schedulePracticeReminders } from '../logic/reminderUtils';
 
 export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -106,11 +108,16 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   const endLesson = async (finalSpot: Spot) => {
     if (!progress) return;
+    const isWeb = Capacitor.getPlatform() === 'web';
 
     const updatedProgress: Progress = {
       ...progress,
       new: false,
-      recentSpots: completed,
+      recentSpots: completed.some(
+        (s) => s.string === finalSpot.string && s.fret === finalSpot.fret
+      )
+        ? completed
+        : [...completed, finalSpot],
       last_review_date: today,
       spots: progress.spots.map((s) =>
         s.string === finalSpot.string && s.fret === finalSpot.fret
@@ -122,12 +129,19 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setProgress(updatedProgress);
     await saveProgress(updatedProgress); // wait for save to complete
 
-    window.location.href = '/'; // refresh necessary to remove mic icon
+    // Schedule notifications (on ios only)
+    if (!isWeb) {
+      await schedulePracticeReminders();
+    }
 
-    // setLessonStatus('after');
-    // setLessonQueue([]);
-    // setCurrentSpot(null);
-    // setResult(null);
+    if (isWeb) {
+      window.location.href = '/'; // refresh necessary to remove mic icon
+    } else {
+      setLessonStatus('after');
+      setLessonQueue([]);
+      setCurrentSpot(null);
+      setResult(null);
+    }
   };
 
   /* ------------------------------------------------------------------ */

@@ -231,6 +231,7 @@ useEffect(() => {
 
     /* ---- STEP 4: request microphone ------------------------------------ */
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    console.log('Stream tracks:', stream.getAudioTracks());
     if (cancelled) {
       stream.getTracks().forEach(t => t.stop());
       void audioCtx.close();
