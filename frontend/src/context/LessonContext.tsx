@@ -24,6 +24,7 @@ export type LessonContextType = {
   isFirstLesson: boolean | null;
   tutorialStep: number;
   setTutorialStep: React.Dispatch<React.SetStateAction<number>>;
+  tutorialQueue: Spot[];
   today: string;
   loading: boolean;
   showFail: () => void;

@@ -109,14 +109,14 @@ export default function Profile() {
 
       if (entry?.status === 'practicing') {
         const bright = key === toggledKey;
-        className = `text-black hover:brightness-150 ${bright ? 'brightness-150' : ''} transition`;
+        className = `text-bg brightness-90 hover:brightness-120 ${bright ? 'brightness-120' : ''} transition`;
         style = {
           backgroundColor: interpolateCssVars('unpracticed', 'mastered', entry.info.masteryPct / 100),
         };
       }
       if (entry?.status === 'mastered') {
         const bright = key === toggledKey;
-        className = `bg-mastered text-black hover:brightness-150 ${bright ? 'brightness-150' : ''} transition`;
+        className = `bg-mastered brightness-120 text-bg hover:brightness-140 ${bright ? 'brightness-140' : ''} transition`;
       }
       if (entry?.status === 'unpracticed') {
         className = 'text-bg';
@@ -150,11 +150,11 @@ export default function Profile() {
   };
 
   const legendContent: ColoredChunk[] = makeTextBlock([
-    { text: '      new  ', className: 'text-fg font-bold' },
-    { text: '   ', className: 'bg-unpracticed text-bg' },
-    { text: ' --> ', className: 'text-fg font-bold' },
-    { text: '   ', className: 'bg-mastered text-bg' },
-    { text: '  mastered', className: 'text-fg font-bold' },
+    { text: '   learning  ', className: 'text-fg' },
+    { text: ' A ', className: 'bg-unpracticed text-black brightness-90' },
+    { text: ' --> ', className: 'text-fg' },
+    { text: ' A ', className: 'bg-mastered text-bg brightness-120' },
+    { text: '  mastered', className: 'text-fg' },
   ]);
 
   const fretboardContent = useMemo(() => {
@@ -211,7 +211,7 @@ export default function Profile() {
     <div className="flex flex-col items-center justify-center w-full h-full p-6 gap-4">
       <TextBox width={52} height={1} content={legendContent} />
       <TextBox width={52} height={6} content={fretboardContent} />
-      <TextBox width={52} height={1} content={pctContent} />
+      <TextBox width={70} height={1} content={pctContent} />
     </div>
   );
 }

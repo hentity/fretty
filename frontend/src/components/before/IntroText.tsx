@@ -5,7 +5,7 @@ import { makeTextBlock } from '../../styling/stylingUtils';
 const LINES = [
   'This app is designed to teach you the notes of the ',
   'fretboard with short daily lessons. Grab a tuned   ',
-  'guitar and click below to start.                   '
+  'guitar and click below to start the tutorial.      '
 ];
 const LINE_WIDTH = 80;
 const TYPING_SPEED = 5; // ms per character

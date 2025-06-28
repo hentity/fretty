@@ -11,7 +11,7 @@ function LessonPanelDuring() {
         <div className="flex flex-col w-full h-full justify-center items-center">
           <TextBox width={18} height={1} content={makeTextBlock([{ text: '' }])} />
           <Fretboard />
-          <TimerBar totalTime={5} easyTime={2} goodTime={3} />
+          <TimerBar totalTime={5} easyTime={1.8} goodTime={3} />
           {/* <TextBox width={18} height={1} content={makeTextBlock([{ text: '' }])} /> */}
         </div>
       </TextContainer>

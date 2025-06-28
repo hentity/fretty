@@ -283,6 +283,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     isFirstLesson,
     tutorialStep,
     setTutorialStep,
+    tutorialQueue,
     today,
     loading,
     showFail,

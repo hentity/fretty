@@ -30,14 +30,19 @@ function Nav() {
     lessonQueue,
     currentSpot,
     progress,
+    lessonStatus,
     loading,
     today,
+    isFirstLesson,
+    tutorialStep,
   } = useLesson();
 
   const [leftContent, setLeftContent] = useState<ColoredChunk[]>([]);
   const [middleContent, setMiddleContent] = useState<ColoredChunk[]>([]);
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
   const [progressFraction, setProgressFraction] = useState(0);
+  const [showProgress, setShowProgress] = useState(false);
+  const [showTutorialProgress, setShowTutorialProgress] = useState(false)
 
   const isWeb = Capacitor.getPlatform() === 'web';
 
@@ -108,18 +113,39 @@ function Nav() {
       else unpracticed++;
     });
 
-    setMiddleContent(makeTextBlock(
-      [
-        { text: ' ', className: 'text-fg font-bold' },
-        { text: `${practicing} `, className: 'text-practiced font-bold' },
-        { text: 'learning   ', className: 'text-fg' },
-        { text: `${mastered} `, className: 'text-mastered font-bold' },
-        { text: 'mastered   ', className: 'text-fg' },
-        { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
-        { text: 'unpracticed', className: 'text-fg' },
-        { text: ' ', className: 'text-fg font-bold' },
-      ].map(item => ({ ...item, onClick: () => navigate('/profile') }))
-    ));
+    setShowProgress(false)
+    setShowTutorialProgress(false)
+
+    if (lessonStatus == 'during') {
+      if (isFirstLesson && tutorialStep < 6) {
+        setShowTutorialProgress(true)
+        setMiddleContent(makeTextBlock(
+          [
+            { text: `tutorial`, className: 'text-fg font-bold', noPadding: true},
+          ]
+        ));
+      } else {
+        setShowProgress(true)
+        setMiddleContent(makeTextBlock(
+          [
+            { text: `lesson ${Math.round(progressFraction * 100)}% complete`, className: 'text-fg font-bold', noPadding: true},
+          ]
+        ));
+      }
+    } else {
+      setMiddleContent(makeTextBlock(
+        [
+          { text: ' ', className: 'text-fg font-bold' },
+          { text: `${practicing} `, className: 'text-practiced font-bold' },
+          { text: 'learning   ', className: 'text-fg' },
+          { text: `${mastered} `, className: 'text-mastered font-bold' },
+          { text: 'mastered   ', className: 'text-fg' },
+          { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
+          { text: 'unpracticed', className: 'text-fg' },
+          { text: ' ', className: 'text-fg font-bold' },
+        ].map(item => ({ ...item, onClick: () => navigate('/profile') }))
+      ));
+    }
 
     // ----------------------------
     // Right content
@@ -135,30 +161,48 @@ function Nav() {
       ]));
     } else {
       setRightContent(makeTextBlock([
-        { text: '[ options ]', className: 'text-fg active:text-bg active:bg-fg hover:bg-fg hover:text-bg font-bold transition', onClick: () => navigate('/options') }
+        { text: '[ settings ]', className: 'text-fg active:text-bg active:bg-fg hover:bg-fg hover:text-bg font-bold transition', onClick: () => navigate('/options') }
       ]));
     }
-  }, [user, progress, completedSpots, lessonQueue, currentSpot, navigate, currentPath, loading]);
+  }, [user, progress, completedSpots, lessonQueue, currentSpot, navigate, currentPath, loading, progressFraction, tutorialStep, isFirstLesson]);
 
   if (loading) return null;
 
   return (
-    <div className="relative w-screen overflow-x-hidden select-none pt-4 px-4 lg:py-8 lg:py-6">
-      {/* Background progress bar */}
-      {!loading && (
-        <div
-          className="fixed top-0 left-0 w-full h-2 opacity-70 z-0 transition-all"
-          style={{
-            width: `${progressFraction * 100}%`,
-            backgroundColor: interpolateColor(progressFraction),
-          }}
-        />
-      )}
+    <div className="relative w-screen overflow-visible select-none pt-4 px-4 lg:py-8 lg:py-6">
 
       {/* Foreground nav content */}
-      <div className="relative flex justify-between items-center w-full px-4 h-full z-10">
+      <div className="relative flex justify-between items-center w-full px-4 h-full z-10 overflow-visible">
         <TextBox width={12} height={1} content={leftContent} />
-        {!loading && <TextBox width={50} height={1} content={middleContent} />}
+          {!loading && (
+            <div className="relative w-fit text-center flex items-center">
+              <TextBox width={50} height={1} content={middleContent} />
+
+              {showProgress && (
+                <div className="absolute top-full left-0 w-full h-1 bg-stone-700 rounded mt-1 pointer-events-none">
+                  <div
+                    className="h-full rounded transition-all"
+                    style={{
+                      width: `${progressFraction * 100}%`,
+                      backgroundColor: interpolateColor(progressFraction),
+                    }}
+                  />
+                </div>
+              )}
+
+              {showTutorialProgress && (
+                <div className="absolute top-full left-0 w-full h-1 bg-stone-700 rounded mt-1 pointer-events-none">
+                  <div
+                    className="h-full rounded transition-all"
+                    style={{
+                      width: `${(tutorialStep + 1) / 6 * 100}%`,
+                      backgroundColor: interpolateColor((tutorialStep + 1) / 6),
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         <TextBox width={12} height={1} content={rightContent} />
       </div>
     </div>

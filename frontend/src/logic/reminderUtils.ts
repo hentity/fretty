@@ -24,13 +24,6 @@ export async function schedulePracticeReminders() {
   const days = [2, 7, 30];
 
   const notificationsToSchedule = [
-    // testing notification in 1 minute
-    {
-      id: 999, // unique ID for test notification
-      title: 'Practice Reminder (Test)',
-      body: 'This is a test notification — should appear in 1 minute!',
-      schedule: { at: new Date(now + 1 * 60 * 1000) }, // 1 minute from now
-    },
     // normal reminders
     ...days.map((d, i) => ({
       id: i + 1, // simple unique IDs (1, 2, 3)

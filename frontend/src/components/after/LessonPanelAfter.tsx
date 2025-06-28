@@ -7,8 +7,11 @@ import { ColoredChunk } from '../../types';
 import { MASTERED_THRESHOLD, spotKey } from '../../logic/lessonUtils';
 import { useAuth } from '../../context/UserContext';
 import LessonCompleteText from '../before/LessonComplete';
+import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
 
 const BAR_WIDTH = 20;
+const REMINDERS_PREF_KEY = 'practiceRemindersEnabled';
 
 function LessonPanelAfter() {
   const { progress } = useLesson();
@@ -16,6 +19,7 @@ function LessonPanelAfter() {
   const [noteChunks, setNoteChunks] = useState<ColoredChunk[]>([]);
   const [masteryChunks, setMasteryChunks] = useState<ColoredChunk[]>([]);
   const [reviewChunks, setReviewChunks] = useState<ColoredChunk[]>([]);
+  const [showReminderText, setShowReminderText] = useState(false); 
 
   if (!progress?.recentSpots) {
     return (
@@ -33,8 +37,21 @@ function LessonPanelAfter() {
   const tip: ColoredChunk[] = []
 
   if (!user) {
-    tip.push({text: 'LESSON COMPLETE!', className: 'text-easy font-bold'})
+    tip.push({text: 'LESSON COMPLETE!', className: 'text-fg font-bold'})
   }
+
+  // check reminders
+  useEffect(() => {
+    const checkReminders = async () => {
+      const isWeb = Capacitor.getPlatform() === 'web';
+      if (isWeb) return;
+
+      const { value } = await Preferences.get({ key: REMINDERS_PREF_KEY });
+      const remindersEnabled = value === 'true';
+      setShowReminderText(!remindersEnabled);
+    };
+    checkReminders();
+  }, []);
 
   useEffect(() => {
     if (!progress || completedSpots.length === 0) {
@@ -73,7 +90,7 @@ function LessonPanelAfter() {
       });
 
       masteryLines.push({ text: '|', className: 'text-fg brightness-80' });
-      masteryLines.push({ text: '█'.repeat(filled), className: 'text-easy brightness-80' });
+      masteryLines.push({ text: '#'.repeat(filled), className: 'text-easy font-bold brightness-100' }); // █
       masteryLines.push({ text: '-'.repeat(empty), className: 'text-fg brightness-80' });
       masteryLines.push({ text: '|', className: 'text-fg brightness-80' });
       masteryLines.push({ text: ` ${percent}%\n`, className: 'text-fg brightness-80' });
@@ -128,6 +145,18 @@ function LessonPanelAfter() {
         </div>
       </TextContainer>
       <TextBox width={90} height={2} content={seeYaTomorrow} />
+      {showReminderText && (
+      <TextBox
+        width={80}
+        height={2}
+        content={[
+          {
+            text: 'tip: you can enable practice reminders in settings',
+            className: 'text-fg bg-stone-700 outline-2 outline-stone-700',
+          },
+        ]}
+      />
+    )}
     </div>
   );
 }
