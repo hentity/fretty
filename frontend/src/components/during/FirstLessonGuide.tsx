@@ -2,52 +2,81 @@ import { useLesson } from '../../context/LessonContext';
 import { TextBox } from '../../components/TextBox';
 
 export default function FirstLessonGuide() {
-  const { currentSpot, tutorialStep } = useLesson();
+  const { currentSpot, tutorialStep, tutorialAllowNext, advance } = useLesson();
 
   if (!currentSpot) return null;
 
   const { string, note } = currentSpot;
 
+  function handleNext() {
+    return
+  }
+
   const tutorialMessages = [
     [
-      {text: `Play the note indicated on the left - ${note} on string ${string + 1}.\nIt's position is highlighted in `, className: 'text-fg'},
+      {text: `Play the note shown on the left (${note})\nIt's position is shown in `, className: 'text-fg'},
       {text: `green`, className: 'text-good font-bold'},
-      {text: ` on the fretboard`, className: 'text-fg'},
+      {text: ` on the fretboard.`, className: 'text-fg'},
     ],
     [
-      {text: `The position of a note will only be highlighted the first  \n`, className: 'text-fg'},
-      {text: `time you practice it. Play the ${note} on string ${string+1} to continue.`, className: 'text-fg'},
+      {text: `The position of a note will be shown `, className: 'text-fg'},
+      {text: `the first  \n`, className: 'text-fg'},
+      {text: `time you practice it. Play the ${note} to continue.`, className: 'text-fg'},
     ],
     [
-      {text: `You're getting the hang of it :) If you forget a note, \n`, className: 'text-fg'},
-      {text: `don't stress - it will be highlighted in `, className: 'text-fg'},
-      {text: `red`, className: 'text-fail font-bold'},
-      {text: ` to remind you.`, className: 'text-fg'},
+      {text: `You're getting the hang of it :) \n`, className: 'text-fg'},
+      {text: `Try a few more.`, className: 'text-fg'},
     ],
     [
-      {text: `The learning algorithm will guide you through the\n`, className: 'text-fg'},
-      {text: `fretboard at your own pace wth short daily lessons.`, className: 'text-fg'},
+      {text: `Short lessons will guide you through\n`, className: 'text-fg'},
+      {text: `the fretboard at your own pace.`, className: 'text-fg'},
     ],
     [
-      {text: `This works best if you come back every day.\n`, className: 'text-fg'},
-      {text: `(but if you miss some days, the algorithm will adapt)`, className: 'text-fg'},
+      {text: `This works best if you practice daily.\n`, className: 'text-fg'},
+      {text: `Each lesson should take 5 minutes or less.`, className: 'text-fg'},
     ],
     [
-      {text: `Last note. After this, you'll start progressing through\n`, className: 'text-fg'},
-      {text: `the fretboard, starting with the first string. Good luck!`, className: 'text-fg'},
+      {text: `Last one. Your first lesson will begin now,\n`, className: 'text-fg'},
+      {text: `starting with the first string. Good luck!`, className: 'text-fg'},
     ],
   ];
+
+  const nextButton = [
+    { text: '    next    ', onClick: handleNext , className: 'text-bg bg-good font-bold' + (!tutorialAllowNext ? 'brightness-50' : '')},
+  ]
 
   if (tutorialStep >= tutorialMessages.length) return null;
 
   const content = tutorialMessages[tutorialStep]
 
-  return (
+  // parent wrapper controls brightness
+  const wrapperClass =
+    `h-full flex items-center justify-center bg-good ${tutorialAllowNext ? 'brightness-130' : 'brightness-30'}`
+
+  function tutorialAdvance() {
+    advance(null);
+  }
+
+
+return (
+  <div className="flex items-stretch justify-center p-1 bg-stone-700">
     <TextBox
-      width={65}
+      width={50}
       height={2}
       content={content}
-      className={'bg-stone-700 outline-4 outline-stone-700'}
+      className="bg-stone-700"
     />
-  );
+
+    {/* wrapper owns the tall background; child stays its natural height and is centered */}
+    <div className={`${wrapperClass}`} aria-disabled={!tutorialAllowNext} onClick={tutorialAdvance}>
+      <TextBox
+        width={12}
+        height={1}
+        content={nextButton}
+        className="bg-transparent outline-0"
+      />
+    </div>
+  </div>
+);
+
 }

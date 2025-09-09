@@ -28,6 +28,8 @@ export type LessonContextType = {
   today: string;
   loading: boolean;
   showFail: () => void;
+  tutorialAllowNext: boolean;
+  setTutorialAllowNext: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)

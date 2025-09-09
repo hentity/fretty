@@ -20,11 +20,11 @@ function rowChunks(
   currentSpotString: number | null
 ): ColoredChunk[] {
   const isCurrentString = stringNo === currentSpotString;
-  const rowClass = isCurrentString ? 'bg-fg text-bg animate-pulse' : 'text-fg';
+  const rowClass = isCurrentString ? 'bg-stone-600 text-fg' : 'text-fg';
 
   const chunks: ColoredChunk[] = [
     { text: `${label}`, className: rowClass, manualWidth: 3},
-    { text: `║`, className: 'text-fg' }
+    { text: `║`, className: rowClass }
   ];
 
   for (let f = 1; f <= 12; f++) {
@@ -34,9 +34,9 @@ function rowChunks(
     const cell   = ` ${char} `;
     chunks.push({
       text: cell,
-      className: isHi ? hi.className : 'text-fg',
+      className: isHi ? hi.className : rowClass,
     });
-    chunks.push({ text: '|', className: 'text-fg' });
+    chunks.push({ text: '|', className: rowClass });
   }
   chunks.push({ text: '\n' });
 
@@ -65,13 +65,13 @@ export default function Fretboard() {
         return {
           string: currentSpot.string + 1, // your fretboard is 1-indexed
           fret: currentSpot.fret,
-          className: 'bg-fail animate-ping [animation-iteration-count:1] [animation-fill-mode:forwards]',
+          className: 'transition-colors duration-500 bg-stone-600 outline-2 outline-fail z-10',//animate-ping [animation-iteration-count:1] [animation-fill-mode:forwards]',
         };
       }
       return {
         string: currentSpot.string + 1, // your fretboard is 1-indexed
         fret: currentSpot.fret,
-        className: 'bg-fail',
+        className: 'bg-fail outline-2 outline-fail z-10',
       };
     }
     if (currentSpot?.is_new) {

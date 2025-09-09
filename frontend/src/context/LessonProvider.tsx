@@ -40,13 +40,14 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const [dayOffset, setDayOffset]     = useState(0);
   const today = todayISO(dayOffset);
   const [isFirstLesson, setIsFirstLesson] = useState(false);
+  const [tutorialAllowNext, setTutorialAllowNext] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /*  flash/fretboard highlight state                                   */
   /* ------------------------------------------------------------------ */
   const [highlight, setHighlight] = useState<Highlight | null>(null);
   const highlightSpot = useCallback(
-    (stringNo: number, fretNo: number, colourClass: string, duration = 1500) => {
+    (stringNo: number, fretNo: number, colourClass: string, duration = 2500) => {
       setHighlight({ string: stringNo, fret: fretNo, className: colourClass });
       setTimeout(() => setHighlight(null), duration);
     },
@@ -175,8 +176,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     
       setTutorialQueue(rest);
       setCurrentSpot(next);
-      setResult(null);
-      setIsPausing(false);
+      setTutorialAllowNext(false);
     
       if (tutorialStep >= 5) {
         const lesson = buildLesson(progress, today);
@@ -243,7 +243,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     // pause before moving
     setIsPausing(true);
   
-    setTimeout(() => goToNextOrEnd(updatedSpot, nextQueue), 1500);
+    setTimeout(() => goToNextOrEnd(updatedSpot, nextQueue), 2500);
   };
 
   /* ------------------------------------------------------------------ */
@@ -287,6 +287,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     today,
     loading,
     showFail,
+    tutorialAllowNext,
+    setTutorialAllowNext,
   };
 
   return (

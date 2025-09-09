@@ -24,26 +24,9 @@ function NotePanelDuring() {
     );
   }
 
-  const stringNumber = currentSpot?.string + 1;
-
-  const stringSuffix = (n: number) => {
-    if (n === 1) return 'st';
-    if (n === 2) return 'nd';
-    if (n === 3) return 'rd';
-    return 'th';
-  };
-
-  const stringName = stringNumber !== undefined ? `${stringNumber}${stringSuffix(stringNumber)} string` : '';
-
-  const stringContent = makeTextBlock([
-    { text: stringName, className: 'text-fg font-bold', noPadding: true }
-  ]);
-
   const noteArtRaw = asciiArtMap[currentSpot.note as keyof typeof asciiArtMap] || currentSpot.note;
 
-  const noteArtContent = makeTextBlock([
-    { text: noteArtRaw, className: 'text-fg font-bold', noPadding: true}
-  ]);
+
 
   // Progress indicators
   const filledSymbol = '■';
@@ -58,6 +41,10 @@ function NotePanelDuring() {
   } as const;
 
   const progressColorClass = result ? resultToColorClass[result] : 'text-fg'; // default if no result yet
+
+  const noteArtContent = makeTextBlock([
+    { text: noteArtRaw, className: `text-fg font-bold`, noPadding: true}
+  ]);
 
   const progressMarkers = Array(LEARNING_GOOD_ATTEMPTS).fill(emptySymbol)
     .map((_, idx) => idx < currentSpot.good_attempts ? filledSymbol : emptySymbol)
@@ -91,12 +78,12 @@ function NotePanelDuring() {
         <div className="flex flex-col items-center justify-center w-full h-full">
           
           {/* Main content */}
-          <TextBox width={11} height={1} content={stringContent} />
+          <TextBox width={11} height={2} content={[]} />
           <TextBox width={11} height={6} content={noteArtContent} />
           <TextBox width={11} height={1} content={progressContent} />
 
           {/* Feedback label */}
-          <TextBox width={11} height={1} content={feedbackContent} />
+          <TextBox width={11} height={2} content={feedbackContent} />
         </div>
       </TextContainer>
     </div>

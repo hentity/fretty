@@ -8,6 +8,7 @@ import { useLesson } from '../../../context/LessonContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import init, { detect_note } from '../../../wasm/audio_processing';
+import { ColoredChunk } from '../../../types';
 
 /* default times (seconds) */
 const DEFAULT_TOTAL = 5;
@@ -36,6 +37,7 @@ export default function TimerBar({
     isPausing,
     isFirstLesson,
     currentSpot,
+    setTutorialAllowNext,
   } = useLesson();
 
   /* timer state */
@@ -56,6 +58,19 @@ export default function TimerBar({
   const bufferRef    = useRef<Float32Array>(new Float32Array());
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const gainRef   = useRef<GainNode | null>(null);
+  
+  /* trying to gate ambient noise */
+  // ---- simple gate (100 ms windows, update on detection tick) ----
+  const cutoffRef           = useRef(0.01);                 // current cutoff
+  const minWinPeakRef       = useRef<number | null>(null);  // global min of window peaks
+  const winPeakRef          = useRef(0);                    // peak within the current 100 ms "window"
+  const lastWindowPeakRef   = useRef(0);                    // for logging
+  const lastLogRef          = useRef(performance.now());
+
+  const MULTIPLE = 10;     // cutoff = MULTIPLE × minWinPeak
+  const FLOOR    = 0.001;  // absolute floor (~ -60 dBFS)
+
+
 
   /* ---------- timer tick ---------- */
   useEffect(() => {
@@ -82,7 +97,7 @@ export default function TimerBar({
       setAdvancing(false)
       setRunning(true);
       setFailing(false);
-      setNoteTxt(null);
+      setNoteTxt(' ');
       bufferRef.current = new Float32Array();
     } else {
       setRunning(false);
@@ -185,7 +200,7 @@ export default function TimerBar({
   
     // step 5: internal cleanup
     bufferRef.current = new Float32Array();
-    setNoteTxt(null);
+    setNoteTxt(' ');
     setRunning(false);
     setFailing(false);
   }
@@ -254,30 +269,73 @@ useEffect(() => {
 
     worklet.port.onmessage = ({ data }) => {
       if (cancelled) return;
-    
+
       const inBuf = data as Float32Array;
-      const combined = new Float32Array(bufferRef.current.length + inBuf.length);
+
+      // --- gate per sample using the current cutoff; also accumulate window peak ---
+      const out = new Float32Array(inBuf.length);
+      const cutoff = Math.max(cutoffRef.current ?? FLOOR, FLOOR);
+
+      for (let i = 0; i < inBuf.length; i++) {
+        const s = inBuf[i];
+        const a = Math.abs(s);
+
+        if (a > winPeakRef.current) winPeakRef.current = a; // track peak within this 100 ms window
+        out[i] = a < cutoff ? 0 : s;                        // per-sample gate
+      }
+
+      // ---- append gated audio to rolling buffer (unchanged) ----
+      const combined = new Float32Array(bufferRef.current.length + out.length);
       combined.set(bufferRef.current);
-      combined.set(inBuf, bufferRef.current.length);
+      combined.set(out, bufferRef.current.length);
       bufferRef.current = combined;
-    
-      // Keep only the latest 500ms of data
+
+      // keep only the latest 500 ms
       if (bufferRef.current.length > maxBufferSize) {
         bufferRef.current = bufferRef.current.slice(bufferRef.current.length - maxBufferSize);
       }
-    
-      // Run detection every 100ms
+
+      // ---- every 100 ms: finalize window, update cutoff, and run detection ----
       const now = performance.now();
       if (now - lastDetection >= 100) {
         lastDetection = now;
-    
+
+        // finalize the current 100 ms window's peak
+        const winPeak = Math.max(winPeakRef.current, FLOOR);
+        lastWindowPeakRef.current = winPeak;
+
+        // update global minimum window peak
+        if (minWinPeakRef.current == null || winPeak < minWinPeakRef.current) {
+          minWinPeakRef.current = winPeak;
+        }
+
+        // update cutoff for the NEXT 100 ms window
+        cutoffRef.current = Math.max(MULTIPLE * (minWinPeakRef.current ?? FLOOR), FLOOR);
+
+        // reset accumulator for the next 100 ms window
+        winPeakRef.current = 0;
+
+        // run detection on the latest 500 ms (unchanged)
         if (bufferRef.current.length >= maxBufferSize) {
-          const chunk = bufferRef.current.slice(-maxBufferSize); // latest 500ms
+          const chunk = bufferRef.current.slice(-maxBufferSize);
           const note = detect_note(chunk, sampleRate);
-          setNoteTxt(note ?? '—');
+          setNoteTxt(' '); // setNoteTxt(note ?? ' ');
+          if (note) console.log(note);
         }
       }
+
+      // ---- optional: log once per second ----
+      if (now - lastLogRef.current >= 1000) {
+        lastLogRef.current = now;
+        const minPk = minWinPeakRef.current ?? 0;
+        console.log(
+          `[gate log] cutoff=${cutoffRef.current.toFixed(5)} ` +
+          `minWinPeak=${minPk.toFixed(5)} ` +
+          `lastWinPeak=${lastWindowPeakRef.current.toFixed(5)}`
+        );
+      }
     };
+
 
     /* ---- STEP 7: store refs so we can clean up later ------------------- */
     audioCtxRef.current = audioCtx;
@@ -314,8 +372,12 @@ useEffect(() => {
         })();
 
       setRunning(false);
-      advance(initial ? null : result);
-      setAdvancing(true);
+      if (!isFirstLesson) {
+        advance(initial ? null : result);
+        setAdvancing(true);
+      } else {
+        setTutorialAllowNext(true);
+      }
     }
   }, [
     noteTxt,
@@ -336,24 +398,28 @@ useEffect(() => {
 
   /* ---------- render progress bar ---------- */
   let filled = Math.min(width, Math.round((elapsed / totalTime) * width));
-  const segments = Array.from({ length: width }).map((_, i) => {
-    const secAt = (i / width) * totalTime;
-    let color   = 'text-hard';
-    if (secAt <= easyTime) color = 'text-easy';
-    else if (secAt <= goodTime) color = 'text-good';
-    if (failing) {
-      color = 'text-fail';
-      filled = 0;
-    }
-    return { text: i < filled - 1 ? ' ' : '=', className: color };
-  });
+  var segments: ColoredChunk[] = []
+  if (!isFirstLesson) {
+    segments = Array.from({ length: width }).map((_, i) => {
+      const secAt = (i / width) * totalTime;
+      let color   = 'text-hard';
+      if (secAt <= easyTime) color = 'text-easy';
+      else if (secAt <= goodTime) color = 'text-good';
+      if (failing) {
+        color = 'text-fail';
+        filled = 0;
+      }
+      return { text: i < filled - 1 ? ' ' : '=', className: color };
+    });
+  }
+
 
   if (advancing && failing) {
     segments.push({text: '\nNext time :)', className: 'text-fg'})
   } else {
     segments.push(
       running || failing || isFirstLesson
-        ? { text: '\nlistening...', className: 'text-fg' }
+        ? { text: `\nlistening... ${noteTxt}`, className: 'text-fg' }
         : { text: '\n', className: 'text-fg' },
     );
   }
