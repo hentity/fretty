@@ -17,7 +17,7 @@ def capacitor_pods
   pod 'CapacitorNativeSettings', :path => '../../node_modules/capacitor-native-settings'
 end
 
-target 'App' do
+target 'Fretty' do
   capacitor_pods
   # Add your Pods here
 end

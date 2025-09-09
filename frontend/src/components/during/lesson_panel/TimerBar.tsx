@@ -319,7 +319,7 @@ useEffect(() => {
         if (bufferRef.current.length >= maxBufferSize) {
           const chunk = bufferRef.current.slice(-maxBufferSize);
           const note = detect_note(chunk, sampleRate);
-          setNoteTxt(' '); // setNoteTxt(note ?? ' ');
+          setNoteTxt(note ?? ' ');
           if (note) console.log(note);
         }
       }
@@ -419,7 +419,7 @@ useEffect(() => {
   } else {
     segments.push(
       running || failing || isFirstLesson
-        ? { text: `\nlistening... ${noteTxt}`, className: 'text-fg' }
+        ? { text: `\nlistening...`, className: 'text-fg' }
         : { text: '\n', className: 'text-fg' },
     );
   }
