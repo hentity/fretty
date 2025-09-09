@@ -7,6 +7,7 @@ export default function FirstLessonGuide() {
   if (!currentSpot) return null;
 
   const { string, note } = currentSpot;
+  console.log(string)
 
   function handleNext() {
     return
