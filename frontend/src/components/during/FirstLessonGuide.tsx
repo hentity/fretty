@@ -9,10 +9,6 @@ export default function FirstLessonGuide() {
   const { string, note } = currentSpot;
   console.log(string)
 
-  function handleNext() {
-    return
-  }
-
   const tutorialMessages = [
     [
       {text: `Play the note shown on the left (${note})\nIt's position is shown in `, className: 'text-fg'},
@@ -42,8 +38,9 @@ export default function FirstLessonGuide() {
     ],
   ];
 
+  const isLastStep = tutorialStep === tutorialMessages.length - 1;
   const nextButton = [
-    { text: '    next    ', onClick: handleNext , className: 'text-bg bg-good font-bold' + (!tutorialAllowNext ? 'brightness-50' : '')},
+    { text: isLastStep ? '   start!   ' : '    next    ', className: 'text-bg bg-good font-bold' + (!tutorialAllowNext ? 'brightness-50' : '')},
   ]
 
   if (tutorialStep >= tutorialMessages.length) return null;
@@ -55,6 +52,7 @@ export default function FirstLessonGuide() {
     `h-full flex items-center justify-center bg-good ${tutorialAllowNext ? 'brightness-130' : 'brightness-30'}`
 
   function tutorialAdvance() {
+    if (!tutorialAllowNext) return;
     advance(null);
   }
 
