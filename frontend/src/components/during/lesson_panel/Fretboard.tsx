@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useLesson } from '../../../context/LessonContext';
+import { useIntroTour } from '../../../context/IntroTourContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import { ColoredChunk } from '../../../types';
@@ -45,6 +46,7 @@ function rowChunks(
 
 export default function Fretboard() {
   const { progress, highlight, currentSpot, result, isPausing } = useLesson();
+  const { isIntroActive, introStep, introHighlight } = useIntroTour();
 
   const tuning = useMemo(
     () => (progress?.tuning ?? ['E','B','G','D','A','E']).map(s => s.slice(0, -1).toUpperCase()),
@@ -55,6 +57,8 @@ export default function Fretboard() {
 
   // if the current spot is new, show its position as persistent highlight
   const persistentHighlight = useMemo(() => {
+    // suppress note position during intro until the "first time" explanation step
+    if (isIntroActive && introStep < 2) return null;
     if (!currentSpot) return {
         string: 1,
         fret: 0,
@@ -71,7 +75,7 @@ export default function Fretboard() {
       return {
         string: currentSpot.string + 1, // your fretboard is 1-indexed
         fret: currentSpot.fret,
-        className: 'bg-fail outline-2 outline-fail z-10',
+        className: 'bg-fail outline-2 outline-fail z-10 animate-fret-blink',
       };
     }
     if (currentSpot?.is_new) {
@@ -82,7 +86,7 @@ export default function Fretboard() {
       };
     }
     return highlight;
-  }, [currentSpot, highlight, result, isPausing]);
+  }, [currentSpot, highlight, result, isPausing, isIntroActive, introStep]);
 
   const content = useMemo(() => {
     const rows: ColoredChunk[] = [];
@@ -92,13 +96,18 @@ export default function Fretboard() {
     return makeTextBlock(rows);
   }, [tuning, persistentHighlight, currentString]);
 
+  const highlighted = isIntroActive && introHighlight === 'fretboard';
+  const dimmed = isIntroActive && introHighlight !== 'fretboard';
+
   return (
-    <div className="flex flex-col items-center">
-      <TextBox
-        width={52}
-        height={6}
-        content={content}
-      />
+    <div className={`transition-all duration-300 ${dimmed ? 'brightness-30' : ''} ${highlighted ? 'bg-stone-900 rounded outline outline-2 outline-stone-500 outline-offset-4 animate-brightness-pulse' : ''}`}>
+      <div className="flex flex-col items-center">
+        <TextBox
+          width={52}
+          height={6}
+          content={content}
+        />
+      </div>
     </div>
   );
 }

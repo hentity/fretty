@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLesson } from '../../../context/LessonContext';
+import { useIntroTour } from '../../../context/IntroTourContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import init, { detect_note } from '../../../wasm/audio_processing';
@@ -38,12 +39,22 @@ export default function TimerBar({
     isFirstLesson,
     currentSpot,
     setTutorialAllowNext,
+    tutorialAllowNext,
+    tutorialStep,
   } = useLesson();
+
+  /* intro tour context */
+  const { isIntroActive, introStep, introHighlight, setIntroDemoComplete } = useIntroTour();
 
   /* timer state */
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef  = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* demo timer state (intro tour only) */
+  const [demoElapsed, setDemoElapsed] = useState(0);
+  const demoIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const DEMO_TARGETS: Record<number, number> = { 4: 0.9, 5: 2.4, 6: 4.0, 7: 5.0 };
 
   /* ui state */
   const [running,  setRunning]  = useState(false);   // bar growing
@@ -89,7 +100,7 @@ export default function TimerBar({
 
   /* ---------- start / stop timer ---------- */
   useEffect(() => {
-    const initial   = isFirstLesson && lessonStep === 0;
+    const initial   = (isFirstLesson && lessonStep === 0) || isIntroActive;
     const shouldRun = lessonStatus === 'during' && !initial;
 
     if (shouldRun) {
@@ -103,7 +114,7 @@ export default function TimerBar({
       setRunning(false);
       setFailing(false);
     }
-  }, [lessonStep, lessonStatus, isFirstLesson]);
+  }, [lessonStep, lessonStatus, isFirstLesson, isIntroActive]);
 
   /* ---------- stop growth and flag failure on timeout ---------- */
   useEffect(() => {
@@ -115,6 +126,37 @@ export default function TimerBar({
     }
   }, [elapsed, running, totalTime, isPausing, showFail]);
 
+  /* ---------- intro tour demo animation ---------- */
+  useEffect(() => {
+    if (!isIntroActive) return;
+
+    // Reset bar on step 7 (static "timer won't run" message) or tour end
+    if (introStep === 8 || introStep < 0) {
+      clearInterval(demoIntervalRef.current!);
+      setDemoElapsed(0);
+      return;
+    }
+
+    const target = DEMO_TARGETS[introStep];
+    if (target === undefined) return; // steps 0, 1, 2 — no animation
+
+    // Steps 3–6: animate from current demoElapsed (cumulative) to target
+    clearInterval(demoIntervalRef.current!);
+    demoIntervalRef.current = setInterval(() => {
+      setDemoElapsed(prev => {
+        const next = +(prev + 0.1).toFixed(1);
+        if (next >= target) {
+          clearInterval(demoIntervalRef.current!);
+          setIntroDemoComplete(true);
+          return target;
+        }
+        return next;
+      });
+    }, 100);
+
+    return () => clearInterval(demoIntervalRef.current!);
+  }, [introStep, isIntroActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ---------- keyboard shortcut (j + k + l) ---------- */
   useEffect(() => {
     const pressedKeys = new Set<string>();
@@ -123,7 +165,7 @@ export default function TimerBar({
       pressedKeys.add(e.code);
       const keys = ['KeyJ', 'KeyK', 'KeyL'];
       const allPressed = keys.every(code => pressedKeys.has(code));
-      if (!allPressed || isPausing) return;
+      if (!allPressed || isPausing || isIntroActive) return;
 
       const initial = isFirstLesson && lessonStep === 0;
       setRunning(false);   // always stop bar
@@ -356,7 +398,7 @@ useEffect(() => {
   /* ---------- auto-advance when correct note is heard ---------- */
   useEffect(() => {
     /* only proceed when listening and we have a note string */
-    const listening = running || failing || (isFirstLesson && lessonStep === 0);
+    const listening = running || failing || (isFirstLesson && lessonStep === 0 && !isIntroActive);
     if (!listening || isPausing || !currentSpot || !noteTxt || lessonStatus !== 'during')
       return;
 
@@ -397,15 +439,17 @@ useEffect(() => {
   ]);
 
   /* ---------- render progress bar ---------- */
-  let filled = Math.min(width, Math.round((elapsed / totalTime) * width));
+  const displayElapsed = isIntroActive ? demoElapsed : elapsed;
+  const demoFailing    = isIntroActive && introStep === 7 && demoElapsed >= 5.0;
+  let filled = Math.min(width, Math.round((displayElapsed / totalTime) * width));
   var segments: ColoredChunk[] = []
-  if (!isFirstLesson) {
+  if (!isFirstLesson || isIntroActive) {
     segments = Array.from({ length: width }).map((_, i) => {
       const secAt = (i / width) * totalTime;
       let color   = 'text-hard';
       if (secAt <= easyTime) color = 'text-easy';
       else if (secAt <= goodTime) color = 'text-good';
-      if (failing) {
+      if (failing || demoFailing) {
         color = 'text-fail';
         filled = 0;
       }
@@ -413,24 +457,39 @@ useEffect(() => {
     });
   }
 
+  const tutorialEncouragements = [
+    'Nice work! Click next to continue.',
+    'Great job! Click next.',
+    'Way to go!',
+    'Nice one!',
+    'Killing it!',
+    "You're goated.",
+  ];
 
   if (advancing && failing) {
     segments.push({text: '\nNext time :)', className: 'text-fg'})
+  } else if (tutorialAllowNext) {
+    segments.push({ text: `\n${tutorialEncouragements[tutorialStep] ?? tutorialEncouragements[0]}`, className: 'text-good' });
   } else {
     segments.push(
-      running || failing || isFirstLesson
+      running || failing || (isFirstLesson && !isIntroActive)
         ? { text: `\nlistening...`, className: 'text-fg' }
         : { text: '\n', className: 'text-fg' },
     );
   }
 
+  const highlighted = isIntroActive && introHighlight === 'timer';
+  const dimmed      = isIntroActive && introHighlight !== 'timer';
+
   return (
-    <div className="flex flex-col items-center gap-2">
-      <TextBox
-        width={width}
-        height={2}
-        content={makeTextBlock([...segments, { text: '' }])}
-      />
+    <div className={`transition-all duration-300 ${dimmed ? 'brightness-30' : ''} ${highlighted ? 'bg-stone-900 rounded outline outline-2 outline-stone-500 outline-offset-4 animate-brightness-pulse' : ''}`}>
+      <div className="flex flex-col items-center gap-2">
+        <TextBox
+          width={width}
+          height={2}
+          content={makeTextBlock([...segments, { text: '' }])}
+        />
+      </div>
     </div>
   );
 }

@@ -1,22 +1,48 @@
 import { Link } from 'react-router-dom'
 import { useLesson } from '../context/LessonContext'
 import { Capacitor } from '@capacitor/core';
+import { useEffect, useState } from 'react';
 
 import Before from '../components/before/Before'
 import During from '../components/during/During'
 import After from '../components/after/After'
+import { IntroTourProvider } from '../context/IntroTourProvider'
 
+
+const RESULT_COLORS: Record<string, string> = {
+  easy: 'var(--color-easy)',
+  good: 'var(--color-good)',
+  hard: 'var(--color-hard)',
+  fail: 'var(--color-fail)',
+};
 
 function Home() {
-  const { lessonStatus } = useLesson()
+  const { lessonStatus, result, isFirstLesson } = useLesson()
 
   const isWeb = Capacitor.getPlatform() === 'web';
 
+  const [flashKey, setFlashKey] = useState(0);
+  const [flashColor, setFlashColor] = useState('transparent');
+
+  useEffect(() => {
+    if (result && !isFirstLesson && lessonStatus === 'during') {
+      setFlashColor(RESULT_COLORS[result]);
+      setFlashKey(k => k + 1);
+    }
+  }, [result, isFirstLesson, lessonStatus]);
+
   return (
     <div className="flex flex-col flex-grow items-center justify-center overflow-hidden relative">
+      {flashKey > 0 && (
+        <div
+          key={flashKey}
+          className="fixed inset-0 pointer-events-none animate-result-flash"
+          style={{ backgroundColor: flashColor }}
+        />
+      )}
       <div className="flex">
         {lessonStatus === 'before' && <Before />}
-        {lessonStatus === 'during' && <During />}
+        {lessonStatus === 'during' && <IntroTourProvider><During /></IntroTourProvider>}
         {lessonStatus === 'after' && <After />}
       </div>
 

@@ -38,26 +38,29 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
     allLines.push({ chunks: currentLineChunks, length: currentLength });
   }
 
-  if (allLines.length > height) {
-    throw new Error(`Content is taller than the specified height (${height} lines).`);
-  }
+  const heightOverflow = allLines.length > height;
+  const widthOverflow  = allLines.some(line => line.length > width);
+  const hasOverflow    = heightOverflow || widthOverflow;
 
-  const topPadding = Math.floor((height - allLines.length) / 2);
-  const bottomPadding = height - topPadding - allLines.length;
+  // Truncate rather than crash
+  const visibleLines = heightOverflow ? allLines.slice(0, height) : allLines;
+
+  const topPadding    = Math.floor((height - visibleLines.length) / 2);
+  const bottomPadding = height - topPadding - visibleLines.length;
 
   return (
-    <pre className={"font-mono leading-tight text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre inline-block p-0 m-0 group cursor-default" + ' ' + className}>
+    <pre className={"font-mono leading-tight text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre inline-block p-0 m-0 group cursor-default" + (hasOverflow ? ' outline outline-2 outline-red-500' : '') + ' ' + className}>
       {/* Top padding */}
       {Array.from({ length: topPadding }).map((_, i) => (
         <div key={`top-pad-${i}`}>&nbsp;</div>
       ))}
 
       {/* Content */}
-      {allLines.map((line, idx) => {
+      {visibleLines.map((line, idx) => {
         const hasNoPadding = line.chunks.some((chunk) => chunk.noPadding);
         const lineLength = line.length;
-        const leftPad = hasNoPadding ? 0 : Math.floor((width - lineLength) / 2);
-        const rightPad = hasNoPadding ? 0 : width - lineLength - leftPad;
+        const leftPad  = hasNoPadding ? 0 : Math.max(0, Math.floor((width - lineLength) / 2));
+        const rightPad = hasNoPadding ? 0 : Math.max(0, width - lineLength - leftPad);
 
         return (
           <div key={idx} className="flex justify-center select-none">
