@@ -57,7 +57,8 @@ const OCTAVE     = 2;
 export function playEasy(note: string, octave: number) {
   const root = noteFreq(note, octave);
   beep(root, 0.08, 0.12);
-  beep(root * FIFTH, 0.09, 0.12, 'square', 0.07);
+  beep(root * MAJOR_THIRD, 0.08, 0.11, 'square', 0.07);
+  beep(root * FIFTH, 0.09, 0.10, 'square', 0.14);
 }
 
 export function playGood(note: string, octave: number) {
@@ -92,12 +93,14 @@ export function playFail() {
 
 export function playNoteComplete(note: string, octave: number) {
   const root = noteFreq(note, octave);
-  [root, root * MAJOR_THIRD, root * FIFTH].forEach((freq, i) =>
+  [root, root * MAJOR_THIRD, root * FIFTH, root * OCTAVE].forEach((freq, i) =>
     beep(freq, 0.12, 0.13, 'square', i * 0.09)
   );
 }
 
-export function playLessonComplete() {
+export async function playLessonComplete() {
+  const ac = getCtx();
+  if (ac.state === 'suspended') await ac.resume();
   const melody = [523, 659, 784, 1047]; // C major fanfare as a fixed flourish
   melody.forEach((freq, i) => beep(freq, 0.14, 0.13, 'square', i * 0.11));
   beep(1047 * OCTAVE, 0.5, 0.10, 'square', melody.length * 0.11);

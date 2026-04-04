@@ -4,7 +4,7 @@ import { playLessonComplete } from '../../logic/sounds';
 
 export default function After() {
   useEffect(() => {
-    playLessonComplete();
+    void playLessonComplete();
   }, []);
 
   return (
