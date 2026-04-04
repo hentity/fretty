@@ -58,6 +58,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /*  pause state for feedback after practice attempt                  */
   /* ------------------------------------------------------------------ */
   const [isPausing, setIsPausing] = useState(false);
+  const [postLessonProgress, setPostLessonProgress] = useState<Progress | null>(null);
+  const [isPracticeAgain, setIsPracticeAgain] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /*  setup progress once loaded                                        */
@@ -109,6 +111,17 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   const endLesson = async (finalSpot: Spot) => {
     if (!progress) return;
+
+    if (isPracticeAgain) {
+      if (postLessonProgress) setProgress(postLessonProgress);
+      setIsPracticeAgain(false);
+      setLessonQueue([]);
+      setCurrentSpot(null);
+      setResult(null);
+      setLessonStatus('after');
+      return;
+    }
+
     const isWeb = Capacitor.getPlatform() === 'web';
 
     const updatedProgress: Progress = {
@@ -257,6 +270,35 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   /* ------------------------------------------------------------------ */
+  /*  practice again (no save)                                         */
+  /* ------------------------------------------------------------------ */
+  const practiceAgain = () => {
+    if (!progress?.recentSpots?.length) return;
+
+    setPostLessonProgress(JSON.parse(JSON.stringify(progress)));
+
+    const recentKeys = new Set(
+      progress.recentSpots.map((s: Spot) => `${s.string}-${s.fret}`)
+    );
+    const practiceSpots = progress.spots
+      .filter((s: Spot) => recentKeys.has(`${s.string}-${s.fret}`))
+      .map((s: Spot) => ({ ...s, good_attempts: 0, status: 'learning' as const }));
+
+    if (!practiceSpots.length) return;
+
+    const [first, ...rest] = practiceSpots;
+    setCurrentSpot(first);
+    setLessonQueue(rest);
+    setCompleted([]);
+    setResult(null);
+    setLessonStep(0);
+    setIsPausing(false);
+    setIsFirstLesson(false);
+    setIsPracticeAgain(true);
+    setLessonStatus('during');
+  };
+
+  /* ------------------------------------------------------------------ */
   /*  advance the day (for testing)                                     */
   /* ------------------------------------------------------------------ */
   const advanceDay = () => setDayOffset((d) => d + 1);
@@ -289,6 +331,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     showFail,
     tutorialAllowNext,
     setTutorialAllowNext,
+    practiceAgain,
+    isPracticeAgain,
   };
 
   return (

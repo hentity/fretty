@@ -9,6 +9,7 @@ import { useIntroTour } from '../../../context/IntroTourContext';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import init, { detect_note } from '../../../wasm/audio_processing';
+import { playFail } from '../../../logic/sounds';
 import { ColoredChunk } from '../../../types';
 
 /* default times (seconds) */
@@ -61,6 +62,7 @@ export default function TimerBar({
   const [failing,  setFailing]  = useState(false);   // bar finished, waiting
   const [noteTxt,  setNoteTxt]  = useState<string | null>(null);
   const [advancing, setAdvancing] = useState(false);
+  const [detectionPaused, setDetectionPaused] = useState(false);
 
   /* audio handles */
   const audioCtxRef  = useRef<AudioContext | null>(null);
@@ -123,6 +125,9 @@ export default function TimerBar({
       setRunning(false);   // stop bar growth
       setFailing(true);    // paint bar red; wait for note / shortcut
       showFail();
+      playFail();
+      setDetectionPaused(true);
+      setTimeout(() => setDetectionPaused(false), 300);
     }
   }, [elapsed, running, totalTime, isPausing, showFail]);
 
@@ -399,7 +404,7 @@ useEffect(() => {
   useEffect(() => {
     /* only proceed when listening and we have a note string */
     const listening = running || failing || (isFirstLesson && lessonStep === 0 && !isIntroActive);
-    if (!listening || isPausing || !currentSpot || !noteTxt || lessonStatus !== 'during')
+    if (!listening || isPausing || detectionPaused || !currentSpot || !noteTxt || lessonStatus !== 'during')
       return;
 
     if (currentSpot.note.startsWith(noteTxt)) {

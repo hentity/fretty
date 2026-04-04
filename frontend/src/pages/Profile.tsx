@@ -174,17 +174,17 @@ export default function Profile() {
 
   if (hoveredInfo) {
     const now = new Date();
-    const reviewDate = new Date(hoveredInfo.nextReview);
+    const reviewDate = new Date(`${hoveredInfo.nextReview}T00:00:00`);
     let relative = 'unscheduled';
 
     if (!isNaN(reviewDate.getTime())) {
       const diffMs = reviewDate.getTime() - now.getTime();
-      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 0) {
-        relative = 'today'
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
+
+      if (diffDays <= 0) {
+        relative = 'today';
       } else if (diffDays === 1) {
-        relative = `tomorrow`
+        relative = 'tomorrow';
       } else if (diffDays < 7) {
         relative = `in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
       } else if (diffDays < 30) {

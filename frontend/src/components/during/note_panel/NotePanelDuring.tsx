@@ -6,10 +6,11 @@ import { TextContainer } from '../../TextContainer';
 import { TextBox } from '../../TextBox';
 import { makeTextBlock } from '../../../styling/stylingUtils';
 import { asciiArtMap } from '../../../styling/asciiArt';
+import { playEasy, playGood, playHard, playNoteComplete } from '../../../logic/sounds';
 
 
 function NotePanelDuring() {
-  const { currentSpot, result, lessonStep } = useLesson();
+  const { currentSpot, result, lessonStep, isPausing } = useLesson();
   const { isIntroActive, introStep, introHighlight, introPipCount, introResult, introDemoComplete } = useIntroTour();
 
   const isDemoStep = introStep >= 4 && introStep <= 7;
@@ -27,12 +28,33 @@ function NotePanelDuring() {
   useEffect(() => {
     if (result && !isIntroActive) {
       const completing = !!(currentSpot && currentSpot.good_attempts >= LEARNING_GOOD_ATTEMPTS);
-      if (!completing) {
-        setNoteAnimClass(result === 'fail' ? 'animate-note-fail' : 'animate-note-success');
-        setNoteKey(k => k + 1);
+      const note = currentSpot?.note ?? 'C';
+      const octave = currentSpot?.octave ?? 5;
+      if (completing) {
+        playNoteComplete(note, octave);
+      } else if (result === 'easy') {
+        playEasy(note, octave);
+      } else if (result === 'good') {
+        playGood(note, octave);
+      } else if (result === 'hard') {
+        playHard(note, octave);
       }
+      setNoteAnimClass(
+        completing ? 'animate-note-complete' :
+        result === 'fail' ? 'animate-note-fail' : 'animate-note-success'
+      );
+      setNoteKey(k => k + 1);
     }
   }, [result, isIntroActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When note is detected after a fail, play success animation + hard sound
+  useEffect(() => {
+    if (isPausing && result === 'fail' && !isIntroActive) {
+      playHard(currentSpot?.note ?? 'C', currentSpot?.octave ?? 5);
+      setNoteAnimClass('animate-note-success');
+      setNoteKey(k => k + 1);
+    }
+  }, [isPausing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Trigger animation when intro demo animation completes
   useEffect(() => {

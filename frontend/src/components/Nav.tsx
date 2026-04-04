@@ -8,6 +8,7 @@ import { interpolateColor, makeTextBlock } from '../styling/stylingUtils';
 import { useEffect, useState } from 'react';
 import { ColoredChunk } from '../types';
 import { useLesson } from '../context/LessonContext';
+import { useIntroTour } from '../context/IntroTourContext';
 import { LEARNING_GOOD_ATTEMPTS, MASTERED_THRESHOLD, spotKey } from '../logic/lessonUtils';
 
 async function logoutAndRedirect(navigate: ReturnType<typeof useNavigate>) {
@@ -35,7 +36,9 @@ function Nav() {
     today,
     isFirstLesson,
     tutorialStep,
+    isPracticeAgain,
   } = useLesson();
+  const { isIntroActive, introStep } = useIntroTour();
 
   const [leftContent, setLeftContent] = useState<ColoredChunk[]>([]);
   const [middleContent, setMiddleContent] = useState<ColoredChunk[]>([]);
@@ -76,7 +79,7 @@ function Nav() {
     // ----------------------------
     // Calculate progress stats
     // ----------------------------
-    if (progress.last_review_date == today) {
+    if (progress.last_review_date == today && !isPracticeAgain) {
       setProgressFraction(1)
     } else {
       const rawSpots = [
@@ -117,7 +120,7 @@ function Nav() {
     setShowTutorialProgress(false)
 
     if (lessonStatus == 'during') {
-      if (isFirstLesson && tutorialStep < 6) {
+      if (isFirstLesson && (isIntroActive || tutorialStep < 6)) {
         setShowTutorialProgress(true)
         setMiddleContent(makeTextBlock(
           [
@@ -195,8 +198,8 @@ function Nav() {
                   <div
                     className="h-full rounded transition-all"
                     style={{
-                      width: `${(tutorialStep + 1) / 6 * 100}%`,
-                      backgroundColor: interpolateColor((tutorialStep + 1) / 6),
+                      width: `${(isIntroActive ? introStep + 1 : 9 + tutorialStep + 1) / 15 * 100}%`,
+                      backgroundColor: interpolateColor((isIntroActive ? introStep + 1 : 9 + tutorialStep + 1) / 15),
                     }}
                   />
                 </div>

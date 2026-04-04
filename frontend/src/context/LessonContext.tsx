@@ -30,6 +30,8 @@ export type LessonContextType = {
   showFail: () => void;
   tutorialAllowNext: boolean;
   setTutorialAllowNext: React.Dispatch<React.SetStateAction<boolean>>;
+  practiceAgain: () => void;
+  isPracticeAgain: boolean;
 };
 
 export const LessonContext = createContext<LessonContextType | undefined>(undefined)

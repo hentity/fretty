@@ -14,12 +14,13 @@ const BAR_WIDTH = 20;
 const REMINDERS_PREF_KEY = 'practiceRemindersEnabled';
 
 function LessonPanelAfter() {
-  const { progress } = useLesson();
+  const { progress, practiceAgain } = useLesson();
   const { user } = useAuth()
   const [noteChunks, setNoteChunks] = useState<ColoredChunk[]>([]);
   const [masteryChunks, setMasteryChunks] = useState<ColoredChunk[]>([]);
   const [reviewChunks, setReviewChunks] = useState<ColoredChunk[]>([]);
-  const [showReminderText, setShowReminderText] = useState(false); 
+  const [showReminderText, setShowReminderText] = useState(false);
+  const [confirmingPractice, setConfirmingPractice] = useState(false);
 
   if (!progress?.recentSpots) {
     return (
@@ -104,7 +105,7 @@ function LessonPanelAfter() {
           if (!isNaN(reviewDateObj.getTime())) {
             const diffMs = reviewDateObj.getTime() - now.getTime();
             const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
-      
+
             if (diffDays === 1) {
               relative = 'tomorrow';
             } else if (diffDays < 7) {
@@ -145,6 +146,25 @@ function LessonPanelAfter() {
         </div>
       </TextContainer>
       <TextBox width={90} height={2} content={seeYaTomorrow} />
+      {!confirmingPractice && (
+        <TextBox width={90} height={1} content={[{
+          text: '[ practice again ]',
+          className: 'text-fg font-bold hover:bg-fg hover:text-bg active:bg-fg active:text-bg cursor-pointer',
+          onClick: () => setConfirmingPractice(true),
+        }]} />
+      )}
+      {confirmingPractice && (
+        <>
+          <TextBox width={90} height={1} content={[{
+            text: "this won't count towards your progress",
+            className: 'text-hard',
+          }]} />
+          <TextBox width={90} height={1} content={[
+            { text: '[ ok ]', className: 'text-fg font-bold hover:bg-fg hover:text-bg active:bg-fg active:text-bg cursor-pointer', onClick: practiceAgain },
+            { text: '[ cancel ]', className: 'text-fg font-bold hover:bg-fg hover:text-bg active:bg-fg active:text-bg cursor-pointer', onClick: () => setConfirmingPractice(false) },
+          ]} />
+        </>
+      )}
       {showReminderText && (
       <TextBox
         width={80}

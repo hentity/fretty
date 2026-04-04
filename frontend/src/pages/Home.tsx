@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import Before from '../components/before/Before'
 import During from '../components/during/During'
 import After from '../components/after/After'
-import { IntroTourProvider } from '../context/IntroTourProvider'
 
 
 const RESULT_COLORS: Record<string, string> = {
@@ -25,7 +24,7 @@ function Home() {
   const [flashColor, setFlashColor] = useState('transparent');
 
   useEffect(() => {
-    if (result && !isFirstLesson && lessonStatus === 'during') {
+    if (result === 'fail' && !isFirstLesson && lessonStatus === 'during') {
       setFlashColor(RESULT_COLORS[result]);
       setFlashKey(k => k + 1);
     }
@@ -42,7 +41,7 @@ function Home() {
       )}
       <div className="flex">
         {lessonStatus === 'before' && <Before />}
-        {lessonStatus === 'during' && <IntroTourProvider><During /></IntroTourProvider>}
+        {lessonStatus === 'during' && <During />}
         {lessonStatus === 'after' && <After />}
       </div>
 
