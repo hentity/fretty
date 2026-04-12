@@ -1,6 +1,9 @@
 import { useLesson } from '../../context/LessonContext';
 import { useState, useEffect, useRef } from 'react';
 import LessonPreviewFretboard from './LessonPreviewFretboard';
+import { TextBox } from '../TextBox';
+import { TextContainer } from '../TextContainer';
+import { makeTextBlock } from '../../styling/stylingUtils';
 
 type Phase = 'idle' | 'preview' | 'countdown';
 
@@ -59,18 +62,28 @@ function NotePanelBefore({ onPreviewChange }: Props) {
 
   return (
     <div className="flex justify-center items-center w-full">
-      {phase === 'idle' ? (
-        <button
-          onClick={handleStart}
-          className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg border-2 border-fg px-8 py-3 rounded-md hover:bg-fg hover:text-bg active:brightness-75 transition cursor-pointer"
-        >
-          begin
-        </button>
-      ) : (
-        <span className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg font-bold">
-          starting in {remaining}...
-        </span>
-      )}
+      <TextContainer width={15} height={5}>
+        <div className="flex flex-col items-center justify-center w-full h-full">
+          {phase === 'idle' ? (
+            <TextBox
+              width={15}
+              height={3}
+              content={makeTextBlock([
+                { text: '⌜             ⌝\n', onClick: handleStart, className: 'group-active:text-easy group-hover:text-easy transition' },
+                { text: '    begin    \n', onClick: handleStart },
+                { text: '⌞             ⌟\n', onClick: handleStart, className: 'group-active:text-easy group-hover:text-easy transition' },
+              ])}
+              className="text-fg font-bold transition"
+            />
+          ) : (
+            <TextBox
+              width={20}
+              height={3}
+              content={[{ text: `starting in ${remaining}...`, className: 'text-fg font-bold' }]}
+            />
+          )}
+        </div>
+      </TextContainer>
     </div>
   );
 }
