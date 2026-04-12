@@ -1,5 +1,6 @@
 import NotePanelBefore from './NotePanelBefore';
 import IntroText from './IntroText';
+import Tips from './Tips';
 import { useAuth } from '../../context/UserContext';
 import { useLesson } from '../../context/LessonContext';
 import { LOCAL_STORAGE_KEY } from '../../pages/Auth';
@@ -34,6 +35,7 @@ export default function Before() {
 
   const [mounted, setMounted] = useState(false);
   const [hasProgress, setHasProgress] = useState(true);
+  const [isPreviewing, setIsPreviewing] = useState(false);
 
   useEffect(() => {
     const checkConditions = async () => {
@@ -76,11 +78,18 @@ export default function Before() {
   const showIntro = !user && !hasProgress;
   const showComplete = progress.last_review_date === today;
 
+  const showIntroText = showIntro && !isPreviewing;
+
   return (
-    <div className="flex flex-col justify-between w-full h-full">
-      {showIntro && <IntroText />}
+    <div className="flex flex-col w-full h-full">
       {showComplete && <LessonPanelAfter />}
-      {!showComplete && <NotePanelBefore />}
+      {!showComplete && (
+        <div className="flex flex-col items-center justify-center w-full h-full gap-6">
+          {showIntroText && <IntroText />}
+          <NotePanelBefore onPreviewChange={setIsPreviewing} />
+          {!showIntro && !isPreviewing && <Tips />}
+        </div>
+      )}
     </div>
   );
 }

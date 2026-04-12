@@ -26,23 +26,21 @@ function NotePanelDuring() {
 
   // Trigger animation on real lesson result
   useEffect(() => {
-    if (result && !isIntroActive) {
-      const completing = !!(currentSpot && currentSpot.good_attempts >= LEARNING_GOOD_ATTEMPTS);
+    if (result && result !== 'fail' && !isIntroActive) {
+      const pips = currentSpot?.good_attempts ?? 0;
+      const completing = pips >= LEARNING_GOOD_ATTEMPTS;
       const note = currentSpot?.note ?? 'C';
       const octave = currentSpot?.octave ?? 5;
       if (completing) {
         playNoteComplete(note, octave);
-      } else if (result === 'easy') {
+      } else if (pips >= 2) {
         playEasy(note, octave);
-      } else if (result === 'good') {
+      } else if (pips >= 1) {
         playGood(note, octave);
-      } else if (result === 'hard') {
+      } else {
         playHard(note, octave);
       }
-      setNoteAnimClass(
-        completing ? 'animate-note-complete' :
-        result === 'fail' ? 'animate-note-fail' : 'animate-note-success'
-      );
+      setNoteAnimClass(completing ? 'animate-note-complete' : 'animate-note-success');
       setNoteKey(k => k + 1);
     }
   }, [result, isIntroActive]); // eslint-disable-line react-hooks/exhaustive-deps

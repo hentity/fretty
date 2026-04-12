@@ -11,6 +11,8 @@ import Tilt from './components/Tilt';
 import AuthGate from './components/AuthGate';
 import Options from './pages/Options';
 import SoundTest from './pages/SoundTest';
+import ProfileTest from './pages/ProfileTest';
+import ButtonTest from './pages/ButtonTest';
 
 function App() {
   useEffect(() => {
@@ -37,10 +39,12 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<div className="flex flex-col items-center justify-center w-full h-full p-6"><Profile /></div>} />
               <Route path="/help" element={<Help />} />
               <Route path="/options" element={<Options />} />
               <Route path="/sound-test" element={<SoundTest />} />
+              <Route path="/profile-test" element={<ProfileTest />} />
+              <Route path="/button-test" element={<ButtonTest />} />
             </Routes>
           </div>
           </IntroTourProvider>

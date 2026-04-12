@@ -60,6 +60,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   const [isPausing, setIsPausing] = useState(false);
   const [postLessonProgress, setPostLessonProgress] = useState<Progress | null>(null);
   const [isPracticeAgain, setIsPracticeAgain] = useState(false);
+  const [postPractice, setPostPractice] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /*  setup progress once loaded                                        */
@@ -115,6 +116,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     if (isPracticeAgain) {
       if (postLessonProgress) setProgress(postLessonProgress);
       setIsPracticeAgain(false);
+      setPostPractice(true);
       setLessonQueue([]);
       setCurrentSpot(null);
       setResult(null);
@@ -272,19 +274,14 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   /* ------------------------------------------------------------------ */
   /*  practice again (no save)                                         */
   /* ------------------------------------------------------------------ */
-  const practiceAgain = () => {
-    if (!progress?.recentSpots?.length) return;
+  const practiceAgain = (preselected: Spot[]) => {
+    if (!progress) return;
 
     setPostLessonProgress(JSON.parse(JSON.stringify(progress)));
 
-    const recentKeys = new Set(
-      progress.recentSpots.map((s: Spot) => `${s.string}-${s.fret}`)
+    const practiceSpots = preselected.map(
+      (s: Spot) => ({ ...s, good_attempts: 0, status: 'learning' as const })
     );
-    const practiceSpots = progress.spots
-      .filter((s: Spot) => recentKeys.has(`${s.string}-${s.fret}`))
-      .map((s: Spot) => ({ ...s, good_attempts: 0, status: 'learning' as const }));
-
-    if (!practiceSpots.length) return;
 
     const [first, ...rest] = practiceSpots;
     setCurrentSpot(first);
@@ -297,6 +294,25 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setIsPracticeAgain(true);
     setLessonStatus('during');
   };
+
+  /* ------------------------------------------------------------------ */
+  /*  auto-reset to 'before' when app returns to foreground            */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    const checkReset = () => {
+      if (document.visibilityState !== 'visible') return;
+      const currentToday = todayISO(dayOffset);
+      if (lessonStatus === 'after' && progress?.last_review_date !== currentToday) {
+        setLessonStatus('before');
+        setLessonQueue([]);
+        setCurrentSpot(null);
+        setResult(null);
+      }
+    };
+
+    document.addEventListener('visibilitychange', checkReset);
+    return () => document.removeEventListener('visibilitychange', checkReset);
+  }, [lessonStatus, progress?.last_review_date, dayOffset]);
 
   /* ------------------------------------------------------------------ */
   /*  advance the day (for testing)                                     */
@@ -333,6 +349,8 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     setTutorialAllowNext,
     practiceAgain,
     isPracticeAgain,
+    postPractice,
+    setPostPractice,
   };
 
   return (

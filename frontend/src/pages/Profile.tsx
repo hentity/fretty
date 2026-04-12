@@ -111,15 +111,15 @@ export default function Profile() {
         const bright = key === toggledKey;
         className = `text-bg brightness-90 hover:brightness-120 ${bright ? 'brightness-120' : ''} transition`;
         style = {
-          backgroundColor: interpolateCssVars('unpracticed', 'mastered', entry.info.masteryPct / 100),
+          backgroundColor: interpolateCssVars('good', 'mastered', Math.max(0, (entry.info.masteryPct - 30) / 70)),
         };
       }
       if (entry?.status === 'mastered') {
         const bright = key === toggledKey;
-        className = `bg-mastered brightness-120 text-bg hover:brightness-140 ${bright ? 'brightness-140' : ''} transition`;
+        className = `bg-mastered-shimmer text-bg hover:brightness-110 ${bright ? 'brightness-110' : ''} transition`;
       }
       if (entry?.status === 'unpracticed') {
-        className = 'text-bg';
+        className = 'bg-unpracticed text-bg brightness-60';
       }
 
       if (entry) {
@@ -150,11 +150,14 @@ export default function Profile() {
   };
 
   const legendContent: ColoredChunk[] = makeTextBlock([
-    { text: '   learning  ', className: 'text-fg' },
-    { text: ' A ', className: 'bg-unpracticed text-black brightness-90' },
+    { text: ' unpracticed  ', className: 'text-fg brightness-60' },
+    { text: ' A ', className: 'bg-unpracticed text-bg brightness-60' },
     { text: ' --> ', className: 'text-fg' },
-    { text: ' A ', className: 'bg-mastered text-bg brightness-120' },
-    { text: '  mastered', className: 'text-fg' },
+    { text: ' learning  ', className: 'text-good' },
+    { text: ' A ', className: 'bg-good text-bg brightness-90' },
+    { text: ' --> ', className: 'text-fg' },
+    { text: ' mastered  ', className: 'text-mastered-shimmer' },
+    { text: ' A ', className: 'bg-mastered-shimmer text-bg' },
   ]);
 
   const fretboardContent = useMemo(() => {
@@ -208,8 +211,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-6 gap-4">
-      <TextBox width={52} height={1} content={legendContent} />
+    <div className="flex flex-col items-center gap-4">
+      <TextBox width={60} height={1} content={legendContent} />
       <TextBox width={52} height={6} content={fretboardContent} />
       <TextBox width={70} height={1} content={pctContent} />
     </div>

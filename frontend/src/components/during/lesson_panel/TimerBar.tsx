@@ -367,7 +367,10 @@ useEffect(() => {
           const chunk = bufferRef.current.slice(-maxBufferSize);
           const note = detect_note(chunk, sampleRate);
           setNoteTxt(note ?? ' ');
-          if (note) console.log(note);
+          if (note) {
+            const rms = Math.sqrt(chunk.reduce((sum, s) => sum + s * s, 0) / chunk.length);
+            console.log(note, `rms=${rms.toFixed(5)}`);
+          }
         }
       }
 

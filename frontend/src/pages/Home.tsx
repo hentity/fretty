@@ -39,7 +39,7 @@ function Home() {
           style={{ backgroundColor: flashColor }}
         />
       )}
-      <div className="flex">
+      <div className="flex items-center justify-center w-full h-full">
         {lessonStatus === 'before' && <Before />}
         {lessonStatus === 'during' && <During />}
         {lessonStatus === 'after' && <After />}

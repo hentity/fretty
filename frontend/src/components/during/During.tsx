@@ -3,7 +3,7 @@ import NotePanelDuring from './note_panel/NotePanelDuring';
 import LessonPanelDuring from './lesson_panel/LessonPanelDuring';
 import { useLesson } from '../../context/LessonContext';
 import { useIntroTour } from '../../context/IntroTourContext';
-import { LEARNING_GOOD_ATTEMPTS } from '../../logic/lessonUtils';
+import { LEARNING_GOOD_ATTEMPTS, MASTERED_THRESHOLD } from '../../logic/lessonUtils';
 import { TextBox } from '../TextBox';
 import { makeTextBlock } from '../../styling/stylingUtils';
 import FirstLessonGuide from './FirstLessonGuide';
@@ -15,13 +15,22 @@ const RESULT_COLORS: Record<string, string> = {
 };
 
 function During() {
-  const { isFirstLesson, lessonStep, result, currentSpot } = useLesson();
+  const { isFirstLesson, lessonStep, result, currentSpot, isPracticeAgain } = useLesson();
   const { isIntroActive } = useIntroTour();
   const [noteComplete, setNoteComplete] = useState(false);
   const [completeResult, setCompleteResult] = useState<'easy' | 'good' | null>(null);
+  const [completeLabel, setCompleteLabel] = useState('note complete!');
   const notePanelRef = useRef<HTMLDivElement>(null);
   const [rippleKey, setRippleKey] = useState(0);
   const [rippleStyle, setRippleStyle] = useState<React.CSSProperties>({});
+  const spotInitialStatusRef = useRef<string | null>(null);
+
+  // Capture the spot's status before any result comes in
+  useEffect(() => {
+    if (currentSpot && !result) {
+      spotInitialStatusRef.current = currentSpot.status;
+    }
+  }, [currentSpot, result]);
 
   useEffect(() => { setNoteComplete(false); }, [lessonStep]);
 
@@ -29,6 +38,17 @@ function During() {
     if (result && currentSpot && currentSpot.good_attempts >= LEARNING_GOOD_ATTEMPTS) {
       setNoteComplete(true);
       setCompleteResult(result === 'easy' ? 'easy' : 'good');
+
+      if (isPracticeAgain) {
+        setCompleteLabel('note practiced!');
+      } else if (spotInitialStatusRef.current === 'learning') {
+        setCompleteLabel('new note learned!');
+      } else if (currentSpot.interval >= MASTERED_THRESHOLD) {
+        setCompleteLabel('note mastered!');
+      } else {
+        setCompleteLabel('note reviewed!');
+      }
+
       if (notePanelRef.current) {
         const rect = notePanelRef.current.getBoundingClientRect();
         setRippleStyle({
@@ -43,7 +63,7 @@ function During() {
 
   const noteCompleteContent = makeTextBlock(
     noteComplete
-      ? [{ text: ' note complete! ', className: `text-bg font-bold bg-${completeResult ?? 'good'}`, noPadding: true }]
+      ? [{ text: ` ${completeLabel} `, className: `text-bg font-bold bg-${completeResult ?? 'good'}`, noPadding: true }]
       : [{ text: '' }]
   );
 
