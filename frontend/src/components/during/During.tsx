@@ -23,12 +23,12 @@ function During() {
   const notePanelRef = useRef<HTMLDivElement>(null);
   const [rippleKey, setRippleKey] = useState(0);
   const [rippleStyle, setRippleStyle] = useState<React.CSSProperties>({});
-  const spotInitialStatusRef = useRef<string | null>(null);
+  const spotInitialIsNewRef = useRef<boolean>(false);
 
-  // Capture the spot's status before any result comes in
+  // Capture whether the spot is new before any result comes in
   useEffect(() => {
     if (currentSpot && !result) {
-      spotInitialStatusRef.current = currentSpot.status;
+      spotInitialIsNewRef.current = currentSpot.is_new;
     }
   }, [currentSpot, result]);
 
@@ -41,7 +41,7 @@ function During() {
 
       if (isPracticeAgain) {
         setCompleteLabel('note practiced!');
-      } else if (spotInitialStatusRef.current === 'learning') {
+      } else if (spotInitialIsNewRef.current) {
         setCompleteLabel('new note learned!');
       } else if (currentSpot.interval >= MASTERED_THRESHOLD) {
         setCompleteLabel('note mastered!');
