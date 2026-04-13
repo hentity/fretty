@@ -125,6 +125,9 @@ export default function ProfileTest() {
     isPracticeAgain: false,
     postPractice: false,
     setPostPractice: NOOP as never,
+    prepareLesson: NOOP,
+    pendingLesson: [],
+    pendingReviewKeys: new Set(),
   };
 
   return (
