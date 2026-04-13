@@ -21,7 +21,7 @@ function NotePanelBefore({ onPreviewChange }: Props) {
   }, [phase, onPreviewChange]);
 
   // skip preview for the very first lesson (tutorial flow)
-  const isFirstLesson = progress?.spots.every(s => s.is_new) ?? false;
+  const isFirstLesson = (progress?.new ?? false) && (progress?.spots.every(s => s.is_new) ?? false);
 
   useEffect(() => {
     if (phase !== 'countdown' || remaining <= 0) return;
@@ -39,9 +39,12 @@ function NotePanelBefore({ onPreviewChange }: Props) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      setRemaining(3);
-      if (!isFirstLesson) prepareLesson();
-      setPhase(isFirstLesson ? 'countdown' : 'preview');
+      if (isFirstLesson) {
+        startLesson();
+      } else {
+        prepareLesson();
+        setPhase('preview');
+      }
     } catch (err) {
       console.error('Mic access denied or failed:', err);
       alert('Microphone access is required to begin. Please check permissions.');

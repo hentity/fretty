@@ -99,6 +99,11 @@ export default function useProgress(user: { uid: string } | null) {
           } else if (iCloudProgress) {
             resolved = iCloudProgress;
             console.log('[iCloud] Loaded from iCloud');
+            // Fresh reinstall: restore reminder preference so the tip doesn't reappear
+            const reminderFlag = await Preferences.get({ key: 'practiceRemindersEnabled' });
+            if (!reminderFlag.value) {
+              await Preferences.set({ key: 'practiceRemindersEnabled', value: 'true' });
+            }
           } else if (localProgress) {
             resolved = localProgress;
             console.log('[iCloud] Loaded from local (iCloud empty)');

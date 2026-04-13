@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Before from '../components/before/Before'
 import During from '../components/during/During'
 import After from '../components/after/After'
+import PreviewScreen from '../components/before/PreviewScreen'
 
 
 const RESULT_COLORS: Record<string, string> = {
@@ -41,6 +42,7 @@ function Home() {
       )}
       <div className="flex items-center justify-center w-full h-full">
         {lessonStatus === 'before' && <Before />}
+        {lessonStatus === 'preview' && <PreviewScreen />}
         {lessonStatus === 'during' && <During />}
         {lessonStatus === 'after' && <After />}
       </div>

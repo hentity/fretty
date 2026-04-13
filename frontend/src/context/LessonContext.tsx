@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import { Spot, Progress } from '../types'
 
-export type LessonStatus = 'before' | 'during' | 'after'
+export type LessonStatus = 'before' | 'preview' | 'during' | 'after'
 export type PracticeResult = 'easy' | 'good' | 'hard' | 'fail' | null
 export type Highlight = { string: number; fret: number; className: string };
 

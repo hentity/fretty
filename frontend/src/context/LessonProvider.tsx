@@ -105,12 +105,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    if (!pendingLesson.length) {
-      console.log('Nothing to review');
-      return;
-    }
-
-    if (progress.spots.every((s) => s.is_new)) {
+    if (progress.new && progress.spots.every((s) => s.is_new)) {
       setIsFirstLesson(true);
       setTutorialStep(0);
       const [firstTutorial, ...restTutorial] = buildTutorial(progress)
@@ -119,6 +114,10 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       setProgress(progress);
       setLessonStatus('during');
     } else {
+      if (!pendingLesson.length) {
+        console.log('Nothing to review');
+        return;
+      }
       const [first, rest] = getNextRandomSpot(pendingLesson);
       setLessonQueue(rest);
       setCompleted([]);
@@ -216,19 +215,18 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       setTutorialAllowNext(false);
     
       if (tutorialStep >= 5) {
-        const lesson = buildLesson(progress, today);
-        if (!lesson.length) {
-          console.log('Nothing to review');
-          return;
-        }
-        setLessonStep((prev) => prev + 1);
-        const [first, rest] = getNextRandomSpot(lesson);
-        setLessonQueue(rest);
-        setCompleted([]);
-        setCurrentSpot(first);
-        setLessonStatus('during');
-        setProgress(progress);
+        // Tutorial done — prepare the first real lesson and show preview
+        const tutorialDoneProgress = { ...progress, new: false };
+        pushBackReviews(tutorialDoneProgress, today);
+        const reviewKeys = new Set<string>(tutorialDoneProgress.review_date_to_spots[today] ?? []);
+        setPendingReviewKeys(reviewKeys);
+        const lesson = buildLesson(tutorialDoneProgress, today);
+        setPendingLesson(lesson);
+        setProgress({ ...tutorialDoneProgress });
         setIsFirstLesson(false);
+        setLessonStatus('preview');
+        setTutorialStep((step) => step + 1);
+        return;
       }
       setTutorialStep((step) => step + 1);
       return;

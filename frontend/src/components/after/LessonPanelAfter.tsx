@@ -123,7 +123,7 @@ function LessonPanelAfter() {
     <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto gap-2">
 
       {/* segmented toggle */}
-      <div className={`${MONO} relative mb-2 py-0.5 flex cursor-pointer select-none rounded-lg overflow-hidden outline outline-2 outline-fg`} style={{ minWidth: '34rem' }}>
+      <div className={`${MONO} relative mb-2 py-0.5 flex cursor-pointer select-none rounded-lg overflow-hidden outline outline-2 outline-fg min-w-[34rem] xl:min-w-[42rem] 2xl:min-w-[50rem]`}>
         {/* sliding highlight */}
         <div
           className="absolute inset-0 w-1/3 bg-fg transition-transform duration-300 ease-in-out"

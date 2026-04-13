@@ -14,6 +14,8 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		B38FEABD2F8CA49500A18391 /* ICloudKVPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38FEABC2F8CA49500A18391 /* ICloudKVPlugin.swift */; };
+		B38FEAC02F8CA9A300A18391 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B38FEABF2F8CA9A300A18391 /* ViewController.swift */; };
 		B67FF0B3AD79CECC1D1C623C /* Pods_Fretty.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A9DEA93BC7B7094F92482AC /* Pods_Fretty.framework */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +31,9 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		7A9DEA93BC7B7094F92482AC /* Pods_Fretty.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Fretty.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E9D37955FC2E2FDDA5671BB /* Pods-Fretty.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretty.debug.xcconfig"; path = "Target Support Files/Pods-Fretty/Pods-Fretty.debug.xcconfig"; sourceTree = "<group>"; };
+		B38FEABC2F8CA49500A18391 /* ICloudKVPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICloudKVPlugin.swift; sourceTree = "<group>"; };
+		B38FEABE2F8CA4C800A18391 /* Fretty.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Fretty.entitlements; sourceTree = "<group>"; };
+		B38FEABF2F8CA9A300A18391 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		E93917BE8FB41054C8C885A2 /* Pods-Fretty.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Fretty.release.xcconfig"; path = "Target Support Files/Pods-Fretty/Pods-Fretty.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -47,6 +52,7 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				B38FEABE2F8CA4C800A18391 /* Fretty.entitlements */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
 				F0E2DD3A8F5720DE8DCAD277 /* Pods */,
@@ -65,6 +71,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				B38FEABF2F8CA9A300A18391 /* ViewController.swift */,
+				B38FEABC2F8CA49500A18391 /* ICloudKVPlugin.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -212,7 +220,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B38FEAC02F8CA9A300A18391 /* ViewController.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				B38FEABD2F8CA49500A18391 /* ICloudKVPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,15 +374,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = Fretty.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = org.fretty.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -392,15 +403,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = Fretty.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				PRODUCT_BUNDLE_IDENTIFIER = org.fretty.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
