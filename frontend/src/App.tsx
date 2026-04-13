@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Help from './pages/Help';
 import Nav from './components/Nav';
-import Profile from './pages/Profile';
 import Tilt from './components/Tilt';
 import AuthGate from './components/AuthGate';
 import Options from './pages/Options';
@@ -39,8 +38,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={<div className="flex flex-col items-center justify-center w-full h-full p-6"><Profile /></div>} />
-              <Route path="/help" element={<Help />} />
+              <Route path="/about" element={<Help />} />
               <Route path="/options" element={<Options />} />
               <Route path="/sound-test" element={<SoundTest />} />
               <Route path="/profile-test" element={<ProfileTest />} />

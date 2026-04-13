@@ -72,7 +72,31 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
   }, [initialProgress]);
   
   /* ------------------------------------------------------------------ */
-  /*  start a new lesson                                                */
+  /*  pending lesson state (computed once, used by preview + start)    */
+  /* ------------------------------------------------------------------ */
+  const [pendingLesson, setPendingLesson] = useState<Spot[]>([]);
+  const [pendingReviewKeys, setPendingReviewKeys] = useState<Set<string>>(new Set());
+
+  /* ------------------------------------------------------------------ */
+  /*  prepare lesson — runs once when user clicks begin                */
+  /* ------------------------------------------------------------------ */
+  const prepareLesson = () => {
+    if (!progress) return;
+    if (progress.last_review_date === today) return;
+
+    pushBackReviews(progress, today);
+
+    // capture which keys are reviews BEFORE buildLesson sets them all to 'learning'
+    const reviewKeys = new Set<string>(progress.review_date_to_spots[today] ?? []);
+    setPendingReviewKeys(reviewKeys);
+
+    const lesson = buildLesson(progress, today);
+    setPendingLesson(lesson);
+    setProgress({ ...progress }); // reflect pushBackReviews mutation
+  };
+
+  /* ------------------------------------------------------------------ */
+  /*  start a new lesson — uses pre-computed pending lesson            */
   /* ------------------------------------------------------------------ */
   const startLesson = () => {
     if (!progress) return;
@@ -81,9 +105,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    pushBackReviews(progress, today);
-    const lesson = buildLesson(progress, today);
-    if (!lesson.length) {
+    if (!pendingLesson.length) {
       console.log('Nothing to review');
       return;
     }
@@ -97,7 +119,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
       setProgress(progress);
       setLessonStatus('during');
     } else {
-      const [first, rest] = getNextRandomSpot(lesson);
+      const [first, rest] = getNextRandomSpot(pendingLesson);
       setLessonQueue(rest);
       setCompleted([]);
       setCurrentSpot(first);
@@ -214,7 +236,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     
   
     // update spot progress
-    const updatedSpot = addAttempt({ ...currentSpot }, newResult);
+    const updatedSpot = addAttempt({ ...currentSpot }, newResult, isPracticeAgain);
     setResult(newResult);
   
     const newProgress: Progress = {
@@ -330,6 +352,9 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
     completedSpots: completed,
     currentSpot,
     result,
+    prepareLesson,
+    pendingLesson,
+    pendingReviewKeys,
     startLesson,
     endLesson,
     advance,

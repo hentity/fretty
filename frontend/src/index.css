@@ -131,6 +131,16 @@ html, body {
   animation: scale-pulse 1.8s ease-in-out infinite;
 }
 
+@keyframes spot-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+.animate-spot-pop {
+  animation: spot-pop 0.25s ease-out forwards;
+}
+
 @keyframes mastered-shimmer {
   0%   { background-position: 200% center; }
   100% { background-position: -200% center; }

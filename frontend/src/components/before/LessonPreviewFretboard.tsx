@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { useLesson } from '../../context/LessonContext';
 import { TextBox } from '../TextBox';
 import { makeTextBlock } from '../../styling/stylingUtils';
-import { previewLesson } from '../../logic/lessonUtils';
 import { ColoredChunk } from '../../types';
 
 const STATIC_MARKERS = [
@@ -17,20 +16,16 @@ const STATIC_MARKERS = [
 type Props = { onContinue: () => void };
 
 export default function LessonPreviewFretboard({ onContinue }: Props) {
-  const { progress, today } = useLesson();
+  const { progress, pendingLesson, pendingReviewKeys } = useLesson();
 
   const { reviewKeys, newKeys } = useMemo(() => {
-    const reviewKeys = new Set<string>();
-    const newKeys    = new Set<string>();
-    if (!progress) return { reviewKeys, newKeys };
-
-    for (const spot of previewLesson(progress, today)) {
+    const newKeys = new Set<string>();
+    for (const spot of pendingLesson) {
       const key = `${spot.string}-${spot.fret}`;
-      if (spot.status === 'review') reviewKeys.add(key);
-      else newKeys.add(key);
+      if (!pendingReviewKeys.has(key)) newKeys.add(key);
     }
-    return { reviewKeys, newKeys };
-  }, [progress, today]);
+    return { reviewKeys: pendingReviewKeys, newKeys };
+  }, [pendingLesson, pendingReviewKeys]);
 
   const tuning = useMemo(
     () => (progress?.tuning ?? ['E', 'B', 'G', 'D', 'A', 'E']).map(s => s.slice(0, -1).toUpperCase()),

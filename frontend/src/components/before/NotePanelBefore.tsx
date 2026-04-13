@@ -10,7 +10,7 @@ type Phase = 'idle' | 'preview' | 'countdown';
 type Props = { onPreviewChange?: (active: boolean) => void };
 
 function NotePanelBefore({ onPreviewChange }: Props) {
-  const { startLesson, progress } = useLesson();
+  const { startLesson, prepareLesson, progress } = useLesson();
   const [phase, setPhase]         = useState<Phase>('idle');
   const [remaining, setRemaining] = useState(3);
   const streamRef = useRef<MediaStream | null>(null);
@@ -40,6 +40,7 @@ function NotePanelBefore({ onPreviewChange }: Props) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       setRemaining(3);
+      if (!isFirstLesson) prepareLesson();
       setPhase(isFirstLesson ? 'countdown' : 'preview');
     } catch (err) {
       console.error('Mic access denied or failed:', err);

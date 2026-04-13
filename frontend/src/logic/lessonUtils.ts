@@ -206,70 +206,60 @@ export function getNextRandomSpot(
 
 
 export const LEARNING_GOOD_ATTEMPTS = 3
-const BASE_EASE_FACTOR = 1.6
-const MAX_EASE_FACTOR = 2.4
-const MIN_EASE_FACTOR = 1.2
-const EASE_FACTOR_DROP = 0.4
-const EASE_FACTOR_SLIGHT_DROP = 0.1
-const EASE_FACTOR_BUMP = 0.3
-const REDUCTION_EASE_FACTOR = 0.5
 
-export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail' | null) {
-  if (spot.status === 'unlearnable') {
-    console.log(`[SKIP] Spot at string ${spot.string}, fret ${spot.fret} is unlearnable.`)
-    return spot
-  }
-
-  console.log(`\nSpot at string ${spot.string}, fret ${spot.fret} — Starting status: ${spot.status}`)
-  console.log(`Result: ${result}`)
-  console.log(`Before: ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}`)
+export function addAttempt(spot: Spot, result: 'easy' | 'good' | 'hard' | 'fail' | null, isPractice = false) {
+  if (spot.status === 'unlearnable') return spot
 
   spot.all_attempts += 1
   spot.num_practices += 1
-  spot.is_new = false
-  
+
   if (spot.status === 'learning' || spot.status === 'review') {
     if (result === 'fail') {
       spot.good_attempts = 0
-      if (approxEqual(spot.ease_factor, MIN_EASE_FACTOR) || spot.ease_factor < MIN_EASE_FACTOR) {
-        spot.ease_factor = REDUCTION_EASE_FACTOR
-        console.log('Fail -> Reset good_attempts to 0, ease goes to <1')
-      } else {
-        spot.ease_factor = Math.max(spot.ease_factor - EASE_FACTOR_DROP, MIN_EASE_FACTOR)
-        console.log('Fail -> Reset good_attempts to 0, decrease ease')
-      }
-    } else if (result == 'hard') {
-      if (approxEqual(spot.ease_factor, REDUCTION_EASE_FACTOR)) {
-        console.log('Hard -> good_attempts stays the same, ease remains <1')
-      } else {
-        spot.ease_factor = Math.max(spot.ease_factor - EASE_FACTOR_SLIGHT_DROP, MIN_EASE_FACTOR)
-        console.log('Hard -> good_attempts stays the same, decrease ease slightly')
-      }
+    } else if (result === 'hard') {
+      // no change to good_attempts
     } else if (result === 'good') {
       spot.good_attempts += 1
-      console.log('Good -> Increment good_attempts')
     } else if (result === 'easy') {
-      if (approxEqual(spot.ease_factor, REDUCTION_EASE_FACTOR)) {
-        spot.good_attempts = Math.min(spot.good_attempts + 2, LEARNING_GOOD_ATTEMPTS)
-        console.log('Easy -> Good attempts +2, ease remains <1')
-      } else {
-        spot.good_attempts = Math.min(spot.good_attempts + 2, LEARNING_GOOD_ATTEMPTS)
-        spot.ease_factor = Math.min(spot.ease_factor + EASE_FACTOR_BUMP, MAX_EASE_FACTOR)
-        console.log('Easy -> Good attempts +2, increase ease')
-      }
+      spot.good_attempts = Math.min(spot.good_attempts + 2, LEARNING_GOOD_ATTEMPTS)
     }
   }
 
   if (spot.good_attempts >= LEARNING_GOOD_ATTEMPTS) {
-    spot.interval = Math.max(1, spot.interval * spot.ease_factor)
-    if (approxEqual(spot.ease_factor, REDUCTION_EASE_FACTOR)) {
-      spot.ease_factor = BASE_EASE_FACTOR
+    const prevInterval = spot.interval
+    if (spot.is_new) {
+      spot.interval = spot.all_attempts <= LEARNING_GOOD_ATTEMPTS ? 2 : 1
+      spot.is_new = false
+      if (isPractice) {
+        console.log(`[note practiced] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts`)
+      } else {
+        console.log(`[note learned] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts → interval set to ${spot.interval}d`)
+      }
+    } else {
+      if (spot.all_attempts > 8) {
+        spot.interval = 1
+        if (isPractice) {
+          console.log(`[note practiced] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts`)
+        } else {
+          console.log(`[note reviewed] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts → interval reset to 1d`)
+        }
+      } else {
+        let ease: number
+        if (spot.all_attempts <= 3)       ease = 2.0
+        else if (spot.all_attempts === 4) ease = 1.6
+        else if (spot.all_attempts === 5) ease = 1.0
+        else                              ease = 0.5  // 6–8
+        spot.interval = Math.max(1, spot.interval * ease)
+        if (isPractice) {
+          console.log(`[note practiced] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts`)
+        } else {
+          console.log(`[note reviewed] ${spot.note} (string ${spot.string}, fret ${spot.fret}) — ${spot.all_attempts} attempts, ease ${ease}x → interval ${prevInterval.toFixed(1)}d → ${spot.interval.toFixed(1)}d`)
+        }
+      }
     }
-    
     spot.status = 'review'
   }
 
-  console.log(`✅ After: status=${spot.status}, ease=${spot.ease_factor.toFixed(2)} interval=${spot.interval.toFixed(2)} good_attempts=${spot.good_attempts}, all_attempts=${spot.all_attempts}`)
   return spot
 }
 
@@ -315,6 +305,3 @@ function shiftDate(dateISO: string, days: number): string {
   return date.toISOString().slice(0, 10)
 }
 
-function approxEqual(a: number, b: number, epsilon = 1e-6): boolean {
-  return Math.abs(a - b) < epsilon;
-}

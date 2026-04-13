@@ -118,7 +118,7 @@ export default function PracticeSelector({ onStart }: Props) {
       {count > 0 ? (
         <button
           onClick={handleStart}
-          className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg outline outline-2 outline-fg rounded px-8 py-0.5 bg-easy/10 hover:bg-easy/20 active:brightness-75 transition cursor-pointer"
+          className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg outline outline-2 outline-fg rounded px-8 py-0.5 bg-bg hover:bg-easy/20 active:brightness-75 transition cursor-pointer"
         >
           practice {count} {count === 1 ? 'note' : 'notes'}
         </button>

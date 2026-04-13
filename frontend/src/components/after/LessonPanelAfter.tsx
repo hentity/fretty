@@ -123,7 +123,7 @@ function LessonPanelAfter() {
     <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto gap-2">
 
       {/* segmented toggle */}
-      <div className={`${MONO} relative mb-2 flex cursor-pointer select-none rounded-lg overflow-hidden outline outline-2 outline-fg`} style={{ minWidth: '34rem' }}>
+      <div className={`${MONO} relative mb-2 py-0.5 flex cursor-pointer select-none rounded-lg overflow-hidden outline outline-2 outline-fg`} style={{ minWidth: '34rem' }}>
         {/* sliding highlight */}
         <div
           className="absolute inset-0 w-1/3 bg-fg transition-transform duration-300 ease-in-out"
@@ -156,8 +156,9 @@ function LessonPanelAfter() {
         {/* stats panel */}
         <div
           style={{ gridArea: '1/1' }}
-          className={`flex flex-col items-center gap-2 transition-opacity duration-200 ${activeTab !== 'stats' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          className={`flex flex-col items-center gap-1 transition-opacity duration-200 ${activeTab !== 'stats' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
         >
+          <TextBox width={30} height={1} content={makeTextBlock([{ text: 'DAILY LESSON COMPLETE!', className: 'text-fg font-bold' }])} />
           <TextContainer width={65} height={height + 1}>
             <div className="flex flex-row items-center justify-center w-full h-full">
               <TextBox width={18} height={height} content={noteChunks} />
@@ -165,7 +166,7 @@ function LessonPanelAfter() {
               <TextBox width={18} height={height} content={reviewChunks} />
             </div>
           </TextContainer>
-          <TextBox width={60} height={1} content={[{ text: 'see you tomorrow!', className: 'text-fg' }]} />
+          <TextBox width={60} height={1} content={[{ text: 'see you tomorrow :)', className: 'text-fg' }]} />
           {showReminderText && (
             <TextBox
               width={55}

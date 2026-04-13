@@ -13,6 +13,9 @@ export type LessonContextType = {
   completedSpots: Spot[];
   currentSpot: Spot | null;
   result: PracticeResult;
+  prepareLesson: () => void;
+  pendingLesson: Spot[];
+  pendingReviewKeys: Set<string>;
   startLesson: () => void;
   endLesson: (finalSpot: Spot) => void;
   advance: (newResult: PracticeResult) => void;

@@ -49,7 +49,7 @@ function Home() {
       {lessonStatus !== 'during' && isWeb && 
       <div className="fixed bottom-2 font-mono text-fg text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl brightness-80 flex gap-1 items-center">
         <Link
-          to="/help"
+          to="/about"
           className="hover:underline transition leading-tight"
           aria-label="about"
         >

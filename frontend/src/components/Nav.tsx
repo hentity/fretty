@@ -59,15 +59,15 @@ function Nav() {
     // Calculate left content
     // ----------------------------
     if (!isWeb) {
-      if (currentPath === '/profile') {
+      if (currentPath === '/about') {
         setLeftContent([{text: '[ back ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/')}])
       } else {
-        setLeftContent([{text: '[ progress ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile')}])
+        setLeftContent([{text: '[ about ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/about')}])
       }
     } else if (currentPath === '/' || currentPath === '/options') {
       setLeftContent(makeTextBlock([
         user
-          ? { text: '[ profile ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/profile') }
+          ? { text: '[ about ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/about') }
           : { text: '[ sign in ]', className: 'text-fg hover:bg-fg hover:text-bg active:bg-fg active:text-bg font-bold transition', onClick: () => navigate('/auth') }
       ]));
     } else {
@@ -146,14 +146,14 @@ function Nav() {
           { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
           { text: 'unpracticed', className: 'text-fg' },
           { text: ' ', className: 'text-fg font-bold' },
-        ].map(item => ({ ...item, onClick: () => navigate('/profile') }))
+        ].map(item => ({ ...item, onClick: () => navigate('/about') }))
       ));
     }
 
     // ----------------------------
     // Right content
     // ----------------------------
-    if (currentPath === '/profile' && isWeb) {
+    if (currentPath === '/about' && isWeb) {
       setRightContent(makeTextBlock([
         { text: user ? '[ sign out ]' : '[ sign in ]', className: 'text-fg font-bold active:text-bg active:bg-fg hover:text-bg hover:bg-fg transition', 
           onClick: () => user ? logoutAndRedirect(navigate) : navigate('/auth')}

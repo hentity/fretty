@@ -109,7 +109,7 @@ export default function Profile() {
 
       if (entry?.status === 'practicing') {
         const bright = key === toggledKey;
-        className = `text-bg brightness-90 hover:brightness-120 ${bright ? 'brightness-120' : ''} transition`;
+        className = `text-bg brightness-90 hover:brightness-120 ${bright ? 'brightness-150' : ''} transition`;
         style = {
           backgroundColor: interpolateCssVars('good', 'mastered', Math.max(0, (entry.info.masteryPct - 30) / 70)),
         };
