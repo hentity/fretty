@@ -49,7 +49,7 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
   const bottomPadding = height - topPadding - visibleLines.length;
 
   return (
-    <pre className={"font-mono leading-tight text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl whitespace-pre inline-block p-0 m-0 group cursor-default" + (hasOverflow ? ' outline outline-2 outline-red-500' : '') + ' ' + className}>
+    <pre className={"font-mono leading-tight text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl whitespace-pre inline-block p-0 m-0 group cursor-default" + (hasOverflow ? ' outline outline-2 outline-red-500' : '') + ' ' + className}>
       {/* Top padding */}
       {Array.from({ length: topPadding }).map((_, i) => (
         <div key={`top-pad-${i}`}>&nbsp;</div>

@@ -78,7 +78,6 @@ export default function TimerBar({
   const minWinPeakRef       = useRef<number | null>(null);  // global min of window peaks
   const winPeakRef          = useRef(0);                    // peak within the current 100 ms "window"
   const lastWindowPeakRef   = useRef(0);                    // for logging
-  const lastLogRef          = useRef(performance.now());
 
   const MULTIPLE = 10;     // cutoff = MULTIPLE × minWinPeak
   const FLOOR    = 0.001;  // absolute floor (~ -60 dBFS)
@@ -367,23 +366,9 @@ useEffect(() => {
           const chunk = bufferRef.current.slice(-maxBufferSize);
           const note = detect_note(chunk, sampleRate);
           setNoteTxt(note ?? ' ');
-          if (note) {
-            const rms = Math.sqrt(chunk.reduce((sum, s) => sum + s * s, 0) / chunk.length);
-            console.log(note, `rms=${rms.toFixed(5)}`);
-          }
         }
       }
 
-      // ---- optional: log once per second ----
-      if (now - lastLogRef.current >= 1000) {
-        lastLogRef.current = now;
-        const minPk = minWinPeakRef.current ?? 0;
-        console.log(
-          `[gate log] cutoff=${cutoffRef.current.toFixed(5)} ` +
-          `minWinPeak=${minPk.toFixed(5)} ` +
-          `lastWinPeak=${lastWindowPeakRef.current.toFixed(5)}`
-        );
-      }
     };
 
 

@@ -45,7 +45,8 @@ function Nav() {
   const [rightContent, setRightContent] = useState<ColoredChunk[]>([]);
   const [progressFraction, setProgressFraction] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
-  const [showTutorialProgress, setShowTutorialProgress] = useState(false)
+  const [showTutorialProgress, setShowTutorialProgress] = useState(false);
+  const [compactCounts, setCompactCounts] = useState<{practicing: number, mastered: number, unpracticed: number} | null>(null);
 
   const isWeb = Capacitor.getPlatform() === 'web';
 
@@ -116,6 +117,8 @@ function Nav() {
       else unpracticed++;
     });
 
+    setCompactCounts({ practicing, mastered, unpracticed });
+
     setShowProgress(false)
     setShowTutorialProgress(false)
 
@@ -139,12 +142,12 @@ function Nav() {
       setMiddleContent(makeTextBlock(
         [
           { text: ' ', className: 'text-fg font-bold' },
+          { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
+          { text: 'unpracticed   ', className: 'text-fg' },
           { text: `${practicing} `, className: 'text-practiced font-bold' },
           { text: 'learning   ', className: 'text-fg' },
           { text: `${mastered} `, className: 'text-mastered font-bold' },
-          { text: 'mastered   ', className: 'text-fg' },
-          { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
-          { text: 'unpracticed', className: 'text-fg' },
+          { text: 'mastered', className: 'text-fg' },
           { text: ' ', className: 'text-fg font-bold' },
         ].map(item => ({ ...item, onClick: () => navigate('/about') }))
       ));
@@ -175,10 +178,19 @@ function Nav() {
     <div className="relative w-screen overflow-visible select-none pt-4 px-4 lg:py-8 lg:py-6">
 
       {/* Foreground nav content */}
-      <div className="relative flex justify-between items-center w-full px-4 h-full z-10 overflow-visible">
+      <div className="relative flex justify-between items-center w-full px-4 h-full z-10 overflow-visible text-base sm:text-lg md:text-xl">
         <TextBox width={12} height={1} content={leftContent} />
+          {!loading && compactCounts && lessonStatus !== 'during' && (
+            <div className="flex md:hidden font-mono text-sm items-center gap-1">
+              <span className="text-fg/40 font-bold">{compactCounts.unpracticed}</span>
+              <span className="text-fg/30">·</span>
+              <span className="text-practiced font-bold">{compactCounts.practicing}</span>
+              <span className="text-fg/30">·</span>
+              <span className="text-mastered font-bold">{compactCounts.mastered}</span>
+            </div>
+          )}
           {!loading && (
-            <div className="relative w-fit text-center flex items-center">
+            <div className={`relative w-fit text-center flex items-center ${lessonStatus !== 'during' ? 'hidden md:flex' : 'flex'}`}>
               <TextBox width={50} height={1} content={middleContent} />
 
               {showProgress && (

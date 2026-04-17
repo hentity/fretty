@@ -46,10 +46,12 @@ export default function IntroText() {
   const content = makeTextBlock(chunks);
 
   return (
-    <TextBox
-      width={LINE_WIDTH}
-      height={LINES.length}
-      content={content}
-    />
+    <div className="pt-4">
+      <TextBox
+        width={LINE_WIDTH}
+        height={LINES.length}
+        content={content}
+      />
+    </div>
   );
 }

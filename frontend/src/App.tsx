@@ -9,9 +9,7 @@ import Nav from './components/Nav';
 import Tilt from './components/Tilt';
 import AuthGate from './components/AuthGate';
 import Options from './pages/Options';
-import SoundTest from './pages/SoundTest';
-import ProfileTest from './pages/ProfileTest';
-import ButtonTest from './pages/ButtonTest';
+import Privacy from './pages/Privacy';
 
 function App() {
   useEffect(() => {
@@ -25,30 +23,32 @@ function App() {
   }, []);
 
   return (
-    <div
-      className="w-screen flex flex-col bg-bg overflow-hidden"
-      style={{ height: 'calc(var(--vh) * 100)' }}
-    >
-      <AuthGate>
-        <LessonProvider>
-          <IntroTourProvider>
-          <Tilt />
-          <Nav />
-          <div className="flex-grow flex">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/about" element={<Help />} />
-              <Route path="/options" element={<Options />} />
-              <Route path="/sound-test" element={<SoundTest />} />
-              <Route path="/profile-test" element={<ProfileTest />} />
-              <Route path="/button-test" element={<ButtonTest />} />
-            </Routes>
-          </div>
-          </IntroTourProvider>
-        </LessonProvider>
-      </AuthGate>
-    </div>
+    <Routes>
+      <Route path="/privacy" element={<div className="w-screen min-h-screen bg-bg overflow-y-auto"><Privacy /></div>} />
+      <Route path="*" element={
+        <div
+          className="w-screen flex flex-col bg-bg overflow-hidden"
+          style={{ height: 'calc(var(--vh) * 100)' }}
+        >
+          <AuthGate>
+            <LessonProvider>
+              <IntroTourProvider>
+                <Tilt />
+                <Nav />
+                <div className="flex-grow flex">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/about" element={<Help />} />
+                    <Route path="/options" element={<Options />} />
+                  </Routes>
+                </div>
+              </IntroTourProvider>
+            </LessonProvider>
+          </AuthGate>
+        </div>
+      } />
+    </Routes>
   );
 }
 

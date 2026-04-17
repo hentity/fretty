@@ -211,10 +211,10 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-1">
       <TextBox width={60} height={1} content={legendContent} />
-      <TextBox width={52} height={6} content={fretboardContent} />
-      <TextBox width={70} height={1} content={pctContent} />
+      <TextBox width={52} height={6} content={fretboardContent} className="py-2" />
+      <TextBox width={60} height={1} content={pctContent} />
     </div>
   );
 }

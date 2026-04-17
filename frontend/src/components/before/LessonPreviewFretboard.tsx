@@ -106,12 +106,12 @@ export default function LessonPreviewFretboard({ onContinue }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 pt-2">
       <TextBox width={52} height={1} content={makeTextBlock(summaryChunks)} />
       <TextBox width={52} height={6} content={fretboardContent} />
       <button
         onClick={onContinue}
-        className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg border-2 border-fg rounded-md px-8 py-0.5 hover:bg-fg hover:text-bg active:brightness-75 transition cursor-pointer"
+        className="font-mono text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl bg-fg text-bg font-bold px-8 py-0.5 hover:brightness-75 active:brightness-60 transition cursor-pointer"
       >
         continue
       </button>

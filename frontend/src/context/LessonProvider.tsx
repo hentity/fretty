@@ -168,7 +168,7 @@ export const LessonProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Schedule notifications (on ios only)
     if (!isWeb) {
-      await schedulePracticeReminders();
+      await schedulePracticeReminders(updatedProgress);
     }
 
     if (isWeb) {

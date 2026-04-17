@@ -76,11 +76,11 @@ export default function PracticeSelector({ onStart }: Props) {
           let style: React.CSSProperties = {};
 
           if (isSelected) {
-            className = 'bg-mastered text-bg brightness-140 cursor-pointer';
+            className = 'bg-fg text-bg brightness-100 cursor-pointer';
           } else if (atMax) {
-            className = 'bg-mastered text-bg brightness-70 cursor-default';
+            className = 'bg-fg text-bg brightness-50 cursor-default';
           } else {
-            className = 'bg-mastered text-bg brightness-70 hover:brightness-80 cursor-pointer';
+            className = 'bg-fg text-bg brightness-50 hover:brightness-60 cursor-pointer';
           }
 
           chunks.push({
@@ -118,12 +118,12 @@ export default function PracticeSelector({ onStart }: Props) {
       {count > 0 ? (
         <button
           onClick={handleStart}
-          className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-fg outline outline-2 outline-fg rounded px-8 py-0.5 bg-bg hover:bg-easy/20 active:brightness-75 transition cursor-pointer"
+          className="font-mono text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl bg-fg text-bg font-bold px-8 py-0.5 hover:brightness-75 active:brightness-60 transition cursor-pointer"
         >
           practice {count} {count === 1 ? 'note' : 'notes'}
         </button>
       ) : (
-        <span className="font-mono text-xs sm:text-sm md:text-base lg:text-base xl:text-lg 2xl:text-xl text-hard brightness-60 outline outline-2 outline-transparent rounded px-8 py-0.5">
+        <span className="font-mono text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl text-hard brightness-60 outline outline-2 outline-transparent rounded px-8 py-0.5">
           (won't count towards your progress)
         </span>
       )}

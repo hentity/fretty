@@ -275,13 +275,14 @@ export function pushBackReviews(progress: Progress, todayISO: string) {
     return
   }
 
-  const shiftDays = calculateDaysDifference(earliestDate, todayISO)
+  const d = calculateDaysDifference(earliestDate, todayISO)
 
+  // Step 1: shift all dates forward by d so the most overdue land on today
   const newReviewDateToSpots: Record<string, string[]> = {}
   const newSpotToReviewDate: Record<string, string> = {}
 
   for (const [oldDate, spots] of Object.entries(progress.review_date_to_spots)) {
-    const newDate = shiftDate(oldDate, shiftDays)
+    const newDate = shiftDate(oldDate, d)
     newReviewDateToSpots[newDate] = (newReviewDateToSpots[newDate] || []).concat(spots)
     for (const spotKey of spots) {
       newSpotToReviewDate[spotKey] = newDate
@@ -290,6 +291,42 @@ export function pushBackReviews(progress: Progress, todayISO: string) {
 
   progress.review_date_to_spots = newReviewDateToSpots
   progress.spot_to_review_date = newSpotToReviewDate
+
+  // Step 2: undo — try to pull reviews back toward their original dates.
+  // Process future dates soonest-first so earlier slots aren't claimed by later buckets.
+  const futureDates = Object.keys(progress.review_date_to_spots)
+    .filter(date => date > todayISO)
+    .sort()
+
+  for (const dateY of futureDates) {
+    const spotsOnDay = [...(progress.review_date_to_spots[dateY] ?? [])]
+    if (spotsOnDay.length === 0) continue
+
+    let remaining = [...spotsOnDay]
+
+    for (let offset = d; offset >= 1 && remaining.length > 0; offset--) {
+      const rawTarget = shiftDate(dateY, -offset)
+      // Cap at today — don't place anything in the past
+      const targetDate = rawTarget < todayISO ? todayISO : rawTarget
+
+      const currentBucket = progress.review_date_to_spots[targetDate] ?? []
+      const capacity = MAX_DAILY_NOTES - currentBucket.length
+      if (capacity <= 0) continue
+
+      const toMove = remaining.splice(0, capacity)
+      progress.review_date_to_spots[targetDate] = [...currentBucket, ...toMove]
+      for (const key of toMove) {
+        progress.spot_to_review_date[key] = targetDate
+      }
+    }
+
+    // Update or remove the source bucket
+    if (remaining.length === 0) {
+      delete progress.review_date_to_spots[dateY]
+    } else if (remaining.length < spotsOnDay.length) {
+      progress.review_date_to_spots[dateY] = remaining
+    }
+  }
 }
 
 function calculateDaysDifference(fromISO: string, toISO: string): number {

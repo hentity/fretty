@@ -3,6 +3,6 @@ import Capacitor
 
 class ViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
-        bridge?.registerPluginType(ICloudKVPlugin.self)
+        bridge?.registerPluginInstance(ICloudKVPlugin())
     }
 }
