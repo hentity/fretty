@@ -141,14 +141,14 @@ function Nav() {
     } else {
       setMiddleContent(makeTextBlock(
         [
-          { text: ' ', className: 'text-fg font-bold' },
+          { text: '', className: 'text-fg font-bold' },
           { text: `${unpracticed} `, className: 'text-fg brightness-60 font-bold' },
-          { text: 'unpracticed   ', className: 'text-fg' },
+          { text: 'unpracticed  ', className: 'text-fg' },
           { text: `${practicing} `, className: 'text-practiced font-bold' },
-          { text: 'learning   ', className: 'text-fg' },
+          { text: 'learning  ', className: 'text-fg' },
           { text: `${mastered} `, className: 'text-mastered font-bold' },
           { text: 'mastered', className: 'text-fg' },
-          { text: ' ', className: 'text-fg font-bold' },
+          { text: '', className: 'text-fg font-bold' },
         ].map(item => ({ ...item, onClick: () => navigate('/about') }))
       ));
     }
@@ -175,13 +175,13 @@ function Nav() {
   if (loading) return null;
 
   return (
-    <div className="relative w-screen overflow-visible select-none pt-4 px-4 lg:py-8 lg:py-6">
+    <div className="relative w-full overflow-visible select-none pt-4 px-4 lg:py-8 lg:py-6">
 
       {/* Foreground nav content */}
-      <div className="relative flex justify-between items-center w-full px-4 h-full z-10 overflow-visible text-base sm:text-lg md:text-xl">
-        <TextBox width={12} height={1} content={leftContent} />
+      <div className="relative flex justify-between items-center w-full h-full z-10 overflow-visible text-base sm:text-lg md:text-xl">
+        <TextBox width={9} height={1} content={leftContent} />
           {!loading && compactCounts && lessonStatus !== 'during' && (
-            <div className="flex md:hidden font-mono text-sm items-center gap-1">
+            <div className="flex sm:hidden font-mono text-sm items-center gap-1">
               <span className="text-fg/40 font-bold">{compactCounts.unpracticed}</span>
               <span className="text-fg/30">·</span>
               <span className="text-practiced font-bold">{compactCounts.practicing}</span>
@@ -190,8 +190,8 @@ function Nav() {
             </div>
           )}
           {!loading && (
-            <div className={`relative w-fit text-center flex items-center ${lessonStatus !== 'during' ? 'hidden md:flex' : 'flex'}`}>
-              <TextBox width={50} height={1} content={middleContent} />
+            <div className={`relative w-fit text-center flex items-center ${lessonStatus !== 'during' ? 'hidden sm:flex' : 'flex'}`}>
+              <TextBox width={40} height={1} content={middleContent} />
 
               {showProgress && (
                 <div className="absolute top-full left-0 w-full h-1 bg-stone-700 rounded mt-1 pointer-events-none">
