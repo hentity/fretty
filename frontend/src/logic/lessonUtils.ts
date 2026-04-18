@@ -1,7 +1,7 @@
 import { Spot, Progress } from '../types'
 import { spotToNote } from './noteUtils'
 
-export const MAX_DAILY_NOTES   = 5        // lesson size
+export const MAX_DAILY_NOTES   = 6        // lesson size
 export const RANDOM_POP_LEN    = 2
 export const MASTERED_THRESHOLD = 14
 

@@ -179,7 +179,7 @@ function Nav() {
 
       {/* Foreground nav content */}
       <div className="relative flex justify-between items-center w-full h-full z-10 overflow-visible text-base sm:text-lg md:text-xl">
-        <TextBox width={9} height={1} content={leftContent} />
+        <TextBox width={9} height={1} content={leftContent} className={lessonStatus === 'during' ? 'invisible' : ''} />
           {!loading && compactCounts && lessonStatus !== 'during' && (
             <div className="flex sm:hidden font-mono text-sm items-center gap-1">
               <span className="text-fg/40 font-bold">{compactCounts.unpracticed}</span>
@@ -218,7 +218,7 @@ function Nav() {
               )}
             </div>
           )}
-        <TextBox width={12} height={1} content={rightContent} />
+        <TextBox width={12} height={1} content={rightContent} className={lessonStatus === 'during' ? 'invisible' : ''} />
       </div>
     </div>
   );

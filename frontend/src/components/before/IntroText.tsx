@@ -7,7 +7,7 @@ const LINES = [
   'fretboard with short daily lessons. Grab a tuned   ',
   'guitar and click below to start the tutorial.      '
 ];
-const LINE_WIDTH = 80;
+const LINE_WIDTH = 68;
 const TYPING_SPEED = 5; // ms per character
 
 export default function IntroText() {
