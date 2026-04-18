@@ -39,8 +39,6 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
   }
 
   const heightOverflow = allLines.length > height;
-  const widthOverflow  = allLines.some(line => line.length > width);
-  const hasOverflow    = heightOverflow || widthOverflow;
 
   // Truncate rather than crash
   const visibleLines = heightOverflow ? allLines.slice(0, height) : allLines;
@@ -49,7 +47,7 @@ export const TextBox: React.FC<TextBoxProps> = ({ width, height, content, classN
   const bottomPadding = height - topPadding - visibleLines.length;
 
   return (
-    <pre className={"font-mono leading-tight text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl whitespace-pre inline-block p-0 m-0 group cursor-default" + (hasOverflow ? ' outline outline-2 outline-red-500' : '') + ' ' + className}>
+    <pre className={"font-mono leading-tight text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl whitespace-pre inline-block p-0 m-0 group cursor-default" + ' ' + className}>
       {/* Top padding */}
       {Array.from({ length: topPadding }).map((_, i) => (
         <div key={`top-pad-${i}`}>&nbsp;</div>

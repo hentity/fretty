@@ -4,10 +4,8 @@ import { Progress } from '../types';
 
 const REMINDERS_PREF_KEY = 'practiceRemindersEnabled';
 
-function scheduleAt8pm(daysOffset: number): Date {
-  const date = new Date();
-  date.setDate(date.getDate() + daysOffset);
-  date.setHours(20, 0, 0, 0);
+function scheduleAt8pm(dateISO: string): Date {
+  const date = new Date(`${dateISO}T20:00:00`);
   return date;
 }
 
@@ -17,10 +15,8 @@ function isoForOffset(daysOffset: number): string {
   return d.toLocaleDateString('sv-SE');
 }
 
-// A day has content if there are scheduled reviews or unseen notes to learn
-function hasContentOnDate(progress: Progress, dateISO: string): boolean {
-  const reviews = progress.review_date_to_spots[dateISO] ?? [];
-  return reviews.length > 0 || progress.spots.some(s => s.status === 'unseen');
+function todayISO(): string {
+  return new Date().toLocaleDateString('sv-SE');
 }
 
 export async function schedulePracticeReminders(progress: Progress) {
@@ -39,31 +35,52 @@ export async function schedulePracticeReminders(progress: Progress) {
 
   const toSchedule: { id: number; title: string; body: string; schedule: { at: Date } }[] = [];
   let id = 1;
+  const today = todayISO();
 
-  // Days 1–3: 8pm reminder only when there's actually something to review or learn
-  for (let day = 1; day <= 3; day++) {
-    if (hasContentOnDate(progress, isoForOffset(day))) {
+  const hasUnseenNotes = progress.spots.some(s => s.status === 'unseen');
+
+  if (hasUnseenNotes) {
+    // Still learning: remind on days 1–3 if there's content, plus lapsed fallbacks
+    for (let day = 1; day <= 3; day++) {
+      const dateISO = isoForOffset(day);
+      const reviews = progress.review_date_to_spots[dateISO] ?? [];
+      if (reviews.length > 0 || hasUnseenNotes) {
+        toSchedule.push({
+          id: id++,
+          title: 'Fretty',
+          body: "Don't forget to practice today!",
+          schedule: { at: scheduleAt8pm(dateISO) },
+        });
+      }
+    }
+
+    for (const { days, body } of [
+      { days: 7,  body: "It's been 1 week since your last lesson" },
+      { days: 14, body: "It's been 2 weeks since your last lesson" },
+      { days: 30, body: "It's been 1 month since your last lesson" },
+    ]) {
       toSchedule.push({
         id: id++,
         title: 'Fretty',
-        body: 'Don\'t forget to practice today!',
-        schedule: { at: scheduleAt8pm(day) },
+        body,
+        schedule: { at: scheduleAt8pm(isoForOffset(days)) },
       });
     }
-  }
+  } else {
+    // All notes learned: only notify on the next 3 actual review dates
+    const upcomingDates = Object.keys(progress.review_date_to_spots)
+      .filter(d => d > today && (progress.review_date_to_spots[d]?.length ?? 0) > 0)
+      .sort()
+      .slice(0, 3);
 
-  // Lapsed reminders regardless of content — user has fallen behind
-  for (const { days, body } of [
-    { days: 7,  body: "It's been 1 week since your last lesson" },
-    { days: 14, body: "It's been 2 weeks since your last lesson" },
-    { days: 30, body: "It's been 1 month since your last lesson" },
-  ]) {
-    toSchedule.push({
-      id: id++,
-      title: 'Fretty',
-      body,
-      schedule: { at: scheduleAt8pm(days) },
-    });
+    for (const dateISO of upcomingDates) {
+      toSchedule.push({
+        id: id++,
+        title: 'Fretty',
+        body: "You have notes due for review today!",
+        schedule: { at: scheduleAt8pm(dateISO) },
+      });
+    }
   }
 
   if (toSchedule.length > 0) {

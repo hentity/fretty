@@ -175,7 +175,7 @@ function Nav() {
   if (loading) return null;
 
   return (
-    <div className="relative w-full overflow-visible select-none pt-4 px-4 lg:py-8 lg:py-6">
+    <div className="relative w-full overflow-visible select-none pt-4 px-6 lg:py-8 lg:py-6">
 
       {/* Foreground nav content */}
       <div className="relative flex justify-between items-center w-full h-full z-10 overflow-visible text-base sm:text-lg md:text-xl">

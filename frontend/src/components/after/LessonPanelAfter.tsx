@@ -14,9 +14,11 @@ import PracticeSelector from './PracticeSelector';
 import Profile from '../../pages/Profile';
 import IntroText from '../before/IntroText';
 import LessonPreviewFretboard from '../before/LessonPreviewFretboard';
+import MasteryComplete from './MasteryComplete';
 
 const BAR_WIDTH = 20;
 const REMINDERS_PREF_KEY = 'practiceRemindersEnabled';
+const MASTERY_COMPLETE_PREF_KEY = 'masteryCompleteShown';
 const MONO = 'font-mono text-sm sm:text-base md:text-lg lg:text-lg xl:text-xl 2xl:text-2xl';
 
 type Tab = 'stats' | 'practice' | 'progress';
@@ -39,11 +41,15 @@ function LessonPanelAfter({ showIntro = false }: { showIntro?: boolean }) {
   const streamRef = useRef<MediaStream | null>(null);
   const [lockedMsg, setLockedMsg] = useState(false);
   const [micError, setMicError] = useState(false);
+  const [showMasteryComplete, setShowMasteryComplete] = useState(false);
   const lockedMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAfter = progress?.last_review_date === today;
   const isFirstLesson = (progress?.new ?? false) && (progress?.spots.every(s => s.is_new) ?? false);
   const completedSpots = progress?.recentSpots ?? [];
+
+  const learnableSpots = progress?.spots.filter(s => s.status !== 'unlearnable') ?? [];
+  const allMastered = learnableSpots.length > 0 && learnableSpots.every(s => s.interval >= MASTERED_THRESHOLD);
 
   const newCount    = pendingLesson.filter(s => !pendingReviewKeys.has(`${s.string}-${s.fret}`)).length;
   const reviewCount = pendingLesson.filter(s =>  pendingReviewKeys.has(`${s.string}-${s.fret}`)).length;
@@ -103,6 +109,41 @@ function LessonPanelAfter({ showIntro = false }: { showIntro?: boolean }) {
     check();
     return () => clearTimeout(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show mastery complete screen once per tuning when all notes are mastered
+  const allMasteredRef = useRef(false);
+  allMasteredRef.current = allMastered;
+  const tuningKey = progress?.tuning.join(',') ?? '';
+  useEffect(() => {
+    if (!tuningKey) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const check = async () => {
+      if (!allMasteredRef.current) return;
+      const key = `${MASTERY_COMPLETE_PREF_KEY}_${tuningKey}`;
+      let seen: string | null = null;
+      if (Capacitor.isNativePlatform()) {
+        const { value } = await Preferences.get({ key });
+        seen = value;
+      } else {
+        seen = localStorage.getItem(key);
+      }
+      if (!seen) {
+        timer = setTimeout(() => setShowMasteryComplete(true), 1000);
+      }
+    };
+    check();
+    return () => clearTimeout(timer);
+  }, [tuningKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleMasteryDismiss = async () => {
+    setShowMasteryComplete(false);
+    const key = `${MASTERY_COMPLETE_PREF_KEY}_${tuningKey}`;
+    if (Capacitor.isNativePlatform()) {
+      await Preferences.set({ key, value: 'true' });
+    } else {
+      localStorage.setItem(key, 'true');
+    }
+  };
 
   const handleReminderYes = async () => {
     setShowReminderModal(false);
@@ -214,6 +255,11 @@ function LessonPanelAfter({ showIntro = false }: { showIntro?: boolean }) {
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full overflow-y-auto gap-2 ">
+
+      {/* mastery complete */}
+      {showMasteryComplete && (
+        <MasteryComplete onDismiss={handleMasteryDismiss} />
+      )}
 
       {/* reminders modal */}
       {showReminderModal && (
